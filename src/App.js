@@ -2,7 +2,8 @@ import React from "react";
 import "./App.css";
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
-import BookSection from "./components/BookSection"; // ✅ newly added
+import BookSection from "./components/BookSection";
+import FeaturedComics from "./components/FeaturedComics"; // ✅ actively used now
 
 const categories = [
   {
@@ -42,13 +43,15 @@ function App() {
     <div className="app bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-300">
       <Navbar />
       <Hero />
-
-      {/* Render each category as a beautiful book section */}
       {categories.map((category, i) => (
         <BookSection key={i} title={category.title} books={category.books} />
       ))}
+      <FeaturedComics /> {/* ✅ Added and now used */}
     </div>
   );
 }
 
 export default App;
+
+
+
