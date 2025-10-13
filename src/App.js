@@ -2,6 +2,7 @@ import React from "react";
 import "./App.css";
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
+import BookSection from "./components/BookSection"; // ✅ newly added
 
 const categories = [
   {
@@ -38,30 +39,14 @@ const categories = [
 
 function App() {
   return (
-    <div className="app">
+    <div className="app bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-300">
       <Navbar />
       <Hero />
-      <div className="content">
-        {categories.map((category, i) => (
-          <div key={i} className="category">
-            <h2 className="category-title">{category.title}</h2>
-            <div className="book-row">
-              {category.books.map((book, j) => (
-                <div key={j} className="book-card">
-                  <img src={book.img} alt={book.title} className="book-img" />
-                  <div className="book-overlay">
-                    <h3>{book.title}</h3>
-                    <div className="book-actions">
-                      <button className="read-btn">Read Online</button>
-                      <button className="buy-btn">Buy Physical Copy</button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
+
+      {/* Render each category as a beautiful book section */}
+      {categories.map((category, i) => (
+        <BookSection key={i} title={category.title} books={category.books} />
+      ))}
     </div>
   );
 }
