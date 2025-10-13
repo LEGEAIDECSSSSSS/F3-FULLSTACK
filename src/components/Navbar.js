@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Moon, Sun } from "lucide-react";
-import Logo from "../Images/file_00000000c6b862438fe1abb3f4152911.png"
+import LogoBlack from "../Images/file_00000000c6b862438fe1abb3f4152911.png"; // black logo
+import LogoWhite from "../Images/LOGO LIGHT 1.png"
 
 export default function Navbar() {
   const [darkMode, setDarkMode] = useState(false);
@@ -14,9 +15,13 @@ export default function Navbar() {
   return (
     <nav className="w-full fixed top-0 left-0 z-50 bg-white/70 dark:bg-gray-900/70 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 transition-all">
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3">
-        {/* Logo replaces BookVerse text */}
+        {/* Logo changes depending on mode */}
         <div className="flex items-center">
-          <img src={Logo} alt="BookVerse Logo" className="h-[65px] w-auto" />
+          <img
+            src={darkMode ? LogoWhite : LogoBlack}
+            alt="BookVerse Logo"
+            className="h-[65px] w-auto transition-all duration-300"
+          />
         </div>
 
         <ul className="hidden md:flex items-center gap-8 text-gray-700 dark:text-gray-300 font-medium">
