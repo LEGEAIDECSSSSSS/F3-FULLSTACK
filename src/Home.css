@@ -1,0 +1,71 @@
+.home {
+  background-color: #000;
+  color: #fff;
+  min-height: 100vh;
+  padding: 20px;
+  font-family: "Poppins", sans-serif;
+}
+
+.category-section {
+  margin-bottom: 40px;
+}
+
+.category-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+  padding-left: 10px;
+}
+
+.comics-row {
+  display: flex;
+  gap: 15px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: 10px 0;
+}
+
+.comics-row::-webkit-scrollbar {
+  height: 6px;
+}
+
+.comics-row::-webkit-scrollbar-thumb {
+  background-color: #555;
+  border-radius: 3px;
+}
+
+.comic-card {
+  position: relative;
+  flex: 0 0 160px;
+  height: 240px;
+  overflow: hidden;
+  border-radius: 10px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+  background-color: #111;
+}
+
+.comic-card:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+  z-index: 10;
+}
+
+.comic-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.comic-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+  color: #fff;
+  font-size: 0.85rem;
+  text-align: center;
+}

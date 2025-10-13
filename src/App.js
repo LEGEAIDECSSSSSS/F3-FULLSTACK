@@ -1,41 +1,68 @@
-// src/App.js
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Navbar from "./components/Navbar";
-import BookCard from "./components/BookCard";
-import ReaderPage from "./components/ReaderPage";
-import books from "./data";
 import "./App.css";
-import BuyPage from "./components/BuyPage";
+import Navbar from "./components/Navbar";
+import Hero from "./components/Hero";
 
-
-function HomePage() {
-  return (
-    <>
-      <header className="hero">
-        <h2>Welcome to BookVerse</h2>
-        <p>Your world of stories — read online or buy a physical copy.</p>
-      </header>
-
-      <section id="books" className="book-section">
-        {books.map((book) => (
-          <BookCard key={book.id} book={book} />
-        ))}
-      </section>
-    </>
-  );
-}
+const categories = [
+  {
+    title: "New Releases",
+    books: [
+      { title: "The Silent Heir", img: "https://picsum.photos/300/450?random=1" },
+      { title: "Whispers of Dawn", img: "https://picsum.photos/300/450?random=2" },
+      { title: "Echoes of Time", img: "https://picsum.photos/300/450?random=3" },
+      { title: "Shadowborn", img: "https://picsum.photos/300/450?random=4" },
+      { title: "Moonlight Prophecy", img: "https://picsum.photos/300/450?random=5" },
+    ],
+  },
+  {
+    title: "Best Sellers",
+    books: [
+      { title: "Crimson Skies", img: "https://picsum.photos/300/450?random=6" },
+      { title: "The Lost Path", img: "https://picsum.photos/300/450?random=7" },
+      { title: "Rise of the Ember", img: "https://picsum.photos/300/450?random=8" },
+      { title: "Last Voyage", img: "https://picsum.photos/300/450?random=9" },
+      { title: "Frozen Legacy", img: "https://picsum.photos/300/450?random=10" },
+    ],
+  },
+  {
+    title: "Fantasy & Adventure",
+    books: [
+      { title: "Crown of Mist", img: "https://picsum.photos/300/450?random=11" },
+      { title: "Warden of Fire", img: "https://picsum.photos/300/450?random=12" },
+      { title: "The Hidden Realm", img: "https://picsum.photos/300/450?random=13" },
+      { title: "Oathbreaker", img: "https://picsum.photos/300/450?random=14" },
+      { title: "The Last Mage", img: "https://picsum.photos/300/450?random=15" },
+    ],
+  },
+];
 
 function App() {
   return (
-    <Router>
+    <div className="app">
       <Navbar />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/read/:id" element={<ReaderPage />} />
-        <Route path="/buy/:id" element={<BuyPage />} />
-      </Routes>
-    </Router>
+      <Hero />
+      <div className="content">
+        {categories.map((category, i) => (
+          <div key={i} className="category">
+            <h2 className="category-title">{category.title}</h2>
+            <div className="book-row">
+              {category.books.map((book, j) => (
+                <div key={j} className="book-card">
+                  <img src={book.img} alt={book.title} className="book-img" />
+                  <div className="book-overlay">
+                    <h3>{book.title}</h3>
+                    <div className="book-actions">
+                      <button className="read-btn">Read Online</button>
+                      <button className="buy-btn">Buy Physical Copy</button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 

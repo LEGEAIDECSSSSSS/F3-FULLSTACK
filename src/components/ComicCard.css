@@ -1,0 +1,73 @@
+.comic-card {
+  position: relative;
+  min-width: 180px;
+  height: 270px;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.3s;
+  flex-shrink: 0;
+}
+
+.comic-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.comic-card:hover {
+  transform: scale(1.1);
+  z-index: 2;
+}
+
+.overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 10px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.comic-card:hover .overlay {
+  opacity: 1;
+}
+
+.overlay h3 {
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.overlay p {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.buttons {
+  margin-top: 8px;
+  display: flex;
+  gap: 6px;
+}
+
+.buttons button {
+  background: #e50914;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.buttons button:hover {
+  background: #f40612;
+}
+
+@media (max-width: 600px) {
+  .comic-card {
+    min-width: 130px;
+    height: 200px;
+  }
+}
