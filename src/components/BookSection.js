@@ -55,17 +55,18 @@ const BookSection = ({ title, books, addToCart }) => {
                 <h3 className="text-white text-lg font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   {book.title}
                 </h3>
-                <div className="mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 space-x-3">
-                  <button className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700">
-                    Read Online
-                  </button>
-                  <button
-                    onClick={() => addToCart(book)}
-                    className="px-3 py-1.5 bg-white text-gray-800 rounded-lg text-sm hover:bg-gray-200"
-                  >
-                    Add to Cart
-                  </button>
-                </div>
+                <div className="mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-wrap justify-center gap-2">
+  <button className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 whitespace-nowrap sm:px-2 sm:py-1 sm:text-xs">
+    Read Online
+  </button>
+  <button
+    onClick={() => addToCart(book)}
+    className="px-3 py-1.5 bg-white text-gray-800 rounded-lg text-sm hover:bg-gray-200 whitespace-nowrap sm:px-2 sm:py-1 sm:text-xs"
+  >
+    Add to Cart
+  </button>
+</div>
+
               </div>
             </motion.div>
           ))}
