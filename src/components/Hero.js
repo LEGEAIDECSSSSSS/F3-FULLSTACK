@@ -20,7 +20,7 @@ const Hero = () => {
           transition={{ duration: 0.8 }}
           className="text-5xl md:text-6xl font-extrabold text-white drop-shadow-lg"
         >
-          Dive Into New Worlds
+          Let us take you to a world only we can guide you through
         </motion.h1>
 
         <motion.p
