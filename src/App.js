@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import "./App.css";
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import BookSection from "./components/BookSection";
-import FeaturedComics from "./components/FeaturedComics"; // ✅ actively used now
+import FeaturedComics from "./components/FeaturedComics";
 
 const categories = [
   {
@@ -39,19 +39,27 @@ const categories = [
 ];
 
 function App() {
+  const [cart, setCart] = useState([]);
+
+  const addToCart = (book) => {
+    setCart((prevCart) => {
+      if (!prevCart.find((b) => b.title === book.title)) {
+        return [...prevCart, book];
+      }
+      return prevCart;
+    });
+  };
+
   return (
     <div className="app bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-300">
-      <Navbar />
+      <Navbar cartCount={cart.length} />
       <Hero />
       {categories.map((category, i) => (
-        <BookSection key={i} title={category.title} books={category.books} />
+        <BookSection key={i} title={category.title} books={category.books} addToCart={addToCart} />
       ))}
-      <FeaturedComics /> {/* ✅ Added and now used */}
+      <FeaturedComics />
     </div>
   );
 }
 
 export default App;
-
-
-
