@@ -26,7 +26,8 @@ const BookSection = ({ title, books, addToCart }) => {
         </motion.h2>
 
         {/* Book grid */}
-        <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+       <div className="grid gap-4 grid-cols-3 xs:grid-cols-4 sm:grid-cols-5 md:grid-cols-5 lg:grid-cols-6">
+
           {books.map((book, index) => (
             <motion.div
               key={index}
@@ -46,7 +47,7 @@ const BookSection = ({ title, books, addToCart }) => {
               <img
                 src={book.img}
                 alt={book.title}
-                className="w-full h-80 object-cover group-hover:scale-105 transition-transform duration-500"
+                className="w-full h-55 object-cover group-hover:scale-105 transition-transform duration-500"
               />
 
               {/* Overlay */}
