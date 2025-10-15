@@ -1,24 +1,24 @@
 import { useState } from "react";
-import { Moon, Sun, ShoppingCart, X } from "lucide-react";
+import { Moon, Sun, ShoppingCart, X, Menu } from "lucide-react";
 import LogoBlack from "../Images/file_00000000c6b862438fe1abb3f4152911.png";
 import LogoWhite from "../Images/LOGO LIGHT 1.png";
 
-export default function Navbar({ cartItems = [], onRemoveItem, onCheckout, onCartClick }) {
+export default function Navbar({ cartItems = [], onRemoveItem, onCheckout }) {
   const [darkMode, setDarkMode] = useState(false);
   const [showCart, setShowCart] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
-  // Toggle dark mode
   const toggleDarkMode = () => {
     const html = document.documentElement;
     html.classList.toggle("dark");
     setDarkMode(!darkMode);
   };
 
-  // Toggle cart visibility
   const toggleCart = () => setShowCart(!showCart);
+  const toggleMenu = () => setMenuOpen(!menuOpen);
 
   return (
-    <nav className="w-full fixed top-0 left-0 z-50 bg-white/70 dark:bg-gray-900/70 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 transition-all duration-300">
+    <nav className="w-full fixed top-0 left-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 transition-all duration-300">
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3 relative">
         {/* === LOGO === */}
         <div className="flex items-center">
@@ -29,7 +29,7 @@ export default function Navbar({ cartItems = [], onRemoveItem, onCheckout, onCar
           />
         </div>
 
-        {/* === NAV LINKS === */}
+        {/* === NAV LINKS (Desktop) === */}
         <ul className="hidden md:flex items-center gap-8 text-gray-700 dark:text-gray-300 font-medium">
           <li className="hover:text-indigo-500 transition-colors cursor-pointer">Home</li>
           <li className="hover:text-indigo-500 transition-colors cursor-pointer">Comics</li>
@@ -39,7 +39,7 @@ export default function Navbar({ cartItems = [], onRemoveItem, onCheckout, onCar
 
         {/* === RIGHT ACTIONS === */}
         <div className="flex items-center gap-4">
-          {/* === Cart Icon === */}
+          {/* Cart Icon */}
           <div
             className="relative cursor-pointer hover:scale-110 transition-transform"
             onClick={toggleCart}
@@ -52,7 +52,7 @@ export default function Navbar({ cartItems = [], onRemoveItem, onCheckout, onCar
             )}
           </div>
 
-          {/* === Dark Mode Toggle === */}
+          {/* Dark Mode Toggle */}
           <button
             onClick={toggleDarkMode}
             className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:scale-105 transition-transform"
@@ -63,9 +63,54 @@ export default function Navbar({ cartItems = [], onRemoveItem, onCheckout, onCar
               <Moon className="w-5 h-5 text-gray-700 dark:text-gray-300" />
             )}
           </button>
+
+          {/* Hamburger Menu (Mobile) */}
+          <button
+            onClick={toggleMenu}
+            className="md:hidden p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 transition"
+          >
+            {menuOpen ? (
+              <X className="w-6 h-6 text-gray-700 dark:text-gray-200" />
+            ) : (
+              <Menu className="w-6 h-6 text-gray-700 dark:text-gray-200" />
+            )}
+          </button>
         </div>
 
-        {/* === Mini Cart Dropdown (with fade-in) === */}
+        {/* === Mobile Menu (Slide-In) === */}
+        <div
+          className={`fixed top-0 right-0 h-full w-[70%] ${
+            darkMode ? "bg-gray-900" : "bg-white"
+          } shadow-2xl transform ${
+            menuOpen ? "translate-x-0" : "translate-x-full"
+          } transition-transform duration-300 ease-in-out z-50 border-l border-gray-200 dark:border-gray-700`}
+        >
+          <div className="flex justify-between items-center p-5 border-b border-gray-300 dark:border-gray-700">
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+              Menu
+            </h2>
+            <button onClick={toggleMenu}>
+              <X className="w-6 h-6 text-gray-700 dark:text-gray-200" />
+            </button>
+          </div>
+
+          <ul className="flex flex-col items-start p-5 space-y-6 font-medium text-lg">
+            <li className="text-gray-800 dark:text-gray-200 hover:text-indigo-600 transition-colors cursor-pointer">
+              Home
+            </li>
+            <li className="text-gray-800 dark:text-gray-200 hover:text-indigo-600 transition-colors cursor-pointer">
+              Comics
+            </li>
+            <li className="text-gray-800 dark:text-gray-200 hover:text-indigo-600 transition-colors cursor-pointer">
+              Shop
+            </li>
+            <li className="text-gray-800 dark:text-gray-200 hover:text-indigo-600 transition-colors cursor-pointer">
+              About
+            </li>
+          </ul>
+        </div>
+
+        {/* === Mini Cart Dropdown === */}
         {showCart && (
           <div
             className="absolute right-0 top-16 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 
@@ -116,7 +161,6 @@ export default function Navbar({ cartItems = [], onRemoveItem, onCheckout, onCar
               </div>
             )}
 
-            {/* Checkout Button */}
             {cartItems.length > 0 && (
               <div className="p-4">
                 <button
@@ -130,6 +174,14 @@ export default function Navbar({ cartItems = [], onRemoveItem, onCheckout, onCar
           </div>
         )}
       </div>
+
+      {/* === Overlay when menu is open === */}
+      {menuOpen && (
+        <div
+          onClick={toggleMenu}
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 md:hidden"
+        />
+      )}
     </nav>
   );
 }
