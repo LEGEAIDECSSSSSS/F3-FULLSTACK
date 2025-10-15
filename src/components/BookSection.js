@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { useLibrary } from "../context/LibraryContext"; // ✅ Import LibraryContext
 
 const fadeUp = {
   hidden: { opacity: 0, y: 40 },
@@ -10,7 +11,9 @@ const fadeUp = {
   },
 };
 
-const BookSection = ({ title, books, addToCart }) => {
+const BookSection = ({ title, books }) => {
+  const { addToLibrary } = useLibrary(); // ✅ Access addToLibrary
+
   return (
     <section className="py-16 px-6 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       <div className="max-w-6xl mx-auto">
@@ -26,8 +29,7 @@ const BookSection = ({ title, books, addToCart }) => {
         </motion.h2>
 
         {/* Book grid */}
-       <div className="grid gap-4 grid-cols-3 xs:grid-cols-4 sm:grid-cols-5 md:grid-cols-5 lg:grid-cols-6">
-
+        <div className="grid gap-4 grid-cols-3 xs:grid-cols-4 sm:grid-cols-5 md:grid-cols-5 lg:grid-cols-6">
           {books.map((book, index) => (
             <motion.div
               key={index}
@@ -52,22 +54,23 @@ const BookSection = ({ title, books, addToCart }) => {
 
               {/* Overlay */}
               <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 sm:group-hover:bg-opacity-40 flex flex-col justify-center items-center text-center transition-all duration-300">
-
                 <h3 className="text-white text-lg font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   {book.title}
                 </h3>
-                <div className="mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-wrap justify-center gap-2">
-  <button className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 whitespace-nowrap sm:px-2 sm:py-1 sm:text-xs">
-    Read Online
-  </button>
-  <button
-    onClick={() => addToCart(book)}
-    className="px-3 py-1.5 bg-white text-gray-800 rounded-lg text-sm hover:bg-gray-200 whitespace-nowrap sm:px-2 sm:py-1 sm:text-xs"
-  >
-    Add to Cart
-  </button>
-</div>
 
+                <div className="mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-wrap justify-center gap-2">
+                  <button className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 whitespace-nowrap sm:px-2 sm:py-1 sm:text-xs">
+                    Read Online
+                  </button>
+
+                  {/* ✅ New Add to Library Button */}
+                  <button
+                    onClick={() => addToLibrary(book)}
+                    className="px-3 py-1.5 bg-white text-gray-800 rounded-lg text-sm hover:bg-gray-200 whitespace-nowrap sm:px-2 sm:py-1 sm:text-xs"
+                  >
+                    Add to Library
+                  </button>
+                </div>
               </div>
             </motion.div>
           ))}

@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { Moon, Sun, ShoppingCart, X, Menu } from "lucide-react";
+import { Moon, Sun, X, Menu } from "lucide-react";
 import LogoBlack from "../Images/file_00000000c6b862438fe1abb3f4152911.png";
 import LogoWhite from "../Images/LOGO LIGHT 1.png";
 
-export default function Navbar({ cartItems = [], onRemoveItem, onCheckout }) {
+export default function Navbar() {
   const [darkMode, setDarkMode] = useState(false);
-  const [showCart, setShowCart] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
   const toggleDarkMode = () => {
@@ -14,7 +13,6 @@ export default function Navbar({ cartItems = [], onRemoveItem, onCheckout }) {
     setDarkMode(!darkMode);
   };
 
-  const toggleCart = () => setShowCart(!showCart);
   const toggleMenu = () => setMenuOpen(!menuOpen);
 
   return (
@@ -35,23 +33,11 @@ export default function Navbar({ cartItems = [], onRemoveItem, onCheckout }) {
           <li className="hover:text-indigo-500 transition-colors cursor-pointer">Comics</li>
           <li className="hover:text-indigo-500 transition-colors cursor-pointer">Shop</li>
           <li className="hover:text-indigo-500 transition-colors cursor-pointer">About</li>
+            <li className="hover:text-indigo-500 transition-colors cursor-pointer">My Library</li>
         </ul>
 
         {/* === RIGHT ACTIONS === */}
         <div className="flex items-center gap-4">
-          {/* Cart Icon */}
-          <div
-            className="relative cursor-pointer hover:scale-110 transition-transform"
-            onClick={toggleCart}
-          >
-            <ShoppingCart className="w-6 h-6 text-gray-700 dark:text-gray-200" />
-            {cartItems.length > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-semibold rounded-full w-5 h-5 flex items-center justify-center">
-                {cartItems.length}
-              </span>
-            )}
-          </div>
-
           {/* Dark Mode Toggle */}
           <button
             onClick={toggleDarkMode}
@@ -83,7 +69,7 @@ export default function Navbar({ cartItems = [], onRemoveItem, onCheckout }) {
             darkMode ? "bg-gray-900" : "bg-white"
           } shadow-2xl transform ${
             menuOpen ? "translate-x-0" : "translate-x-full"
-          } transition-transform duration-300 ease-in-out z-50 border-l border-gray-200 dark:border-gray-700`}
+          } transition-transform duration-300 ease-in-out z-50 border-l border-gray-200 dark:border-gray-700 bg-opacity-100`}
         >
           <div className="flex justify-between items-center p-5 border-b border-gray-300 dark:border-gray-700">
             <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
@@ -107,72 +93,11 @@ export default function Navbar({ cartItems = [], onRemoveItem, onCheckout }) {
             <li className="text-gray-800 dark:text-gray-200 hover:text-indigo-600 transition-colors cursor-pointer">
               About
             </li>
+              <li className="text-gray-800 dark:text-gray-200 hover:text-indigo-600 transition-colors cursor-pointer">
+                My Library
+              </li>
           </ul>
         </div>
-
-        {/* === Mini Cart Dropdown === */}
-        {showCart && (
-          <div
-            className="absolute right-0 top-16 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 
-            dark:border-gray-700 overflow-hidden z-50 animate-fadeIn"
-          >
-            <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-                Your Cart
-              </h3>
-              <button
-                onClick={toggleCart}
-                className="text-gray-500 hover:text-red-500 transition"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {cartItems.length === 0 ? (
-              <p className="text-gray-500 dark:text-gray-400 text-center py-6">
-                Your cart is empty
-              </p>
-            ) : (
-              <div className="max-h-60 overflow-y-auto">
-                {cartItems.map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-3 border-b border-gray-100 dark:border-gray-700"
-                  >
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={item.img}
-                        alt={item.title}
-                        className="w-12 h-16 object-cover rounded"
-                      />
-                      <p className="text-sm text-gray-800 dark:text-gray-200">
-                        {item.title}
-                      </p>
-                    </div>
-
-                    <button
-                      onClick={() => onRemoveItem(item.title)}
-                      className="text-red-500 hover:text-red-600 text-sm font-medium"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {cartItems.length > 0 && (
-              <div className="p-4">
-                <button
-                  onClick={onCheckout}
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg font-semibold transition-colors"
-                >
-                  Checkout
-                </button>
-              </div>
-            )}
-          </div>
-        )}
       </div>
 
       {/* === Overlay when menu is open === */}

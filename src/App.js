@@ -7,6 +7,8 @@ import FeaturedComics from "./components/FeaturedComics";
 import Newsletter from "./components/Newsletter";
 import About from "./components/About";
 import Footer from "./components/Footer";
+import bg_dark from "./Images/bg_dark.jpg";
+import { useLibrary } from "./context/LibraryContext"; // ✅ Import Library Hook
 
 const categories = [
   {
@@ -42,23 +44,8 @@ const categories = [
 ];
 
 function App() {
-  const [cartItems, setCartItems] = useState([]);
   const [darkMode, setDarkMode] = useState(false);
-
-  // ✅ Add to cart
-  const addToCart = (book) => {
-    setCartItems((prev) => {
-      if (!prev.find((item) => item.id === book.id)) {
-        return [...prev, book];
-      }
-      return prev;
-    });
-  };
-
-  // ✅ Remove from cart
-  const removeFromCart = (id) => {
-    setCartItems((prev) => prev.filter((item) => item.id !== id));
-  };
+  const { addToLibrary } = useLibrary(); // ✅ Library management
 
   // ✅ Toggle Dark Mode
   const toggleDarkMode = () => {
@@ -72,13 +59,8 @@ function App() {
         darkMode ? "bg-gray-950 text-white" : "bg-gray-50 text-gray-900"
       }`}
     >
-      {/* Navbar (Global Cart + Dark Mode) */}
-      <Navbar
-        cartItems={cartItems}
-        removeFromCart={removeFromCart}
-        toggleDarkMode={toggleDarkMode}
-        darkMode={darkMode}
-      />
+      {/* Navbar (Dark Mode Only) */}
+      <Navbar toggleDarkMode={toggleDarkMode} darkMode={darkMode} />
 
       <Hero />
 
@@ -88,7 +70,7 @@ function App() {
           key={i}
           title={category.title}
           books={category.books}
-          addToCart={addToCart}
+          addToLibrary={addToLibrary} // ✅ changed from addToCart
         />
       ))}
 
