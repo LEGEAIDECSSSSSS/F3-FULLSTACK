@@ -1,13 +1,14 @@
 // src/components/Hero.jsx
 import React from "react";
 import { motion } from "framer-motion";
+import bg_light from "../Images/bg_light.png";
 
 const Hero = () => {
   return (
     <section className="relative w-full h-[85vh] flex items-center justify-center bg-gradient-to-b from-emerald-900/80 to-black/90 dark:from-gray-900 dark:to-black overflow-hidden">
       {/* Background image */}
       <img
-        src="https://images.unsplash.com/photo-1519682337058-a94d519337bc?auto=format&fit=crop&w=1950&q=80"
+        src={bg_light}
         alt="Books Background"
         className="absolute inset-0 w-full h-full object-cover opacity-40"
       />
@@ -20,7 +21,7 @@ const Hero = () => {
           transition={{ duration: 0.8 }}
           className="text-5xl md:text-6xl font-extrabold text-white drop-shadow-lg"
         >
-          Let us take you to a world only we can guide you through
+          Get lost in our world of web and graphic novels
         </motion.h1>
 
         <motion.p
