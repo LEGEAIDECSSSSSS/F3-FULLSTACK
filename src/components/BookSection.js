@@ -51,7 +51,8 @@ const BookSection = ({ title, books, addToCart }) => {
               />
 
               {/* Overlay */}
-              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 flex flex-col justify-center items-center text-center transition-all duration-300">
+              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 sm:group-hover:bg-opacity-40 flex flex-col justify-center items-center text-center transition-all duration-300">
+
                 <h3 className="text-white text-lg font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   {book.title}
                 </h3>

@@ -29,7 +29,7 @@ const Hero = () => {
           transition={{ delay: 0.3, duration: 0.8 }}
           className="text-lg md:text-xl text-gray-200 mt-4"
         >
-          Explore thrilling comics and graphic novels — read online or grab your copy.
+          Explore thrilling graphic and web novels — read online or grab your copy.
         </motion.p>
 
         <motion.div
