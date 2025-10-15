@@ -20,8 +20,8 @@ const Hero = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           className="text-5xl md:text-6xl font-extrabold text-white drop-shadow-lg"
-        >
-          Get lost in our world of web and graphic novels
+        >Let us take you to a world only we can guide you through.
+          
         </motion.h1>
 
         <motion.p
@@ -30,7 +30,7 @@ const Hero = () => {
           transition={{ delay: 0.3, duration: 0.8 }}
           className="text-lg md:text-xl text-gray-200 mt-4"
         >
-          Explore thrilling graphic and web novels — read online or grab your copy.
+          Get lost in our world of web and graphic novels
         </motion.p>
 
         <motion.div
