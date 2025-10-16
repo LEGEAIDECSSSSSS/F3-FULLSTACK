@@ -17,18 +17,18 @@ export default function Navbar() {
   const toggleMenu = () => setMenuOpen(!menuOpen);
 
   return (
-    <nav className="w-full fixed top-0 left-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 transition-all duration-300">
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3 relative">
+    <nav className="fixed top-0 left-0 w-full z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 transition-all duration-300">
+      <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3">
         {/* === LOGO === */}
         <Link to="/" className="flex items-center">
           <img
             src={darkMode ? LogoWhite : LogoBlack}
             alt="BookVerse Logo"
-            className="h-[65px] w-auto transition-all duration-300 cursor-pointer"
+            className="h-[60px] w-auto transition-all duration-300 cursor-pointer"
           />
         </Link>
 
-        {/* === NAV LINKS (Desktop) === */}
+        {/* === DESKTOP NAV LINKS === */}
         <ul className="hidden md:flex items-center gap-8 text-gray-700 dark:text-gray-300 font-medium">
           <li>
             <Link to="/" className="hover:text-indigo-500 transition-colors">
@@ -36,34 +36,49 @@ export default function Navbar() {
             </Link>
           </li>
           <li>
-            <Link to="/comics" className="hover:text-indigo-500 transition-colors">
-              GraphicNovels
+            <Link
+              to="/comics"
+              className="hover:text-indigo-500 transition-colors"
+            >
+              Graphic Novels
             </Link>
           </li>
           <li>
-            <Link to="/comics" className="hover:text-indigo-500 transition-colors">
-              WebNovels
+            <Link
+              to="/comics"
+              className="hover:text-indigo-500 transition-colors"
+            >
+              Web Novels
             </Link>
           </li>
           <li>
-            <Link to="/shop" className="hover:text-indigo-500 transition-colors">
+            <Link
+              to="/shop"
+              className="hover:text-indigo-500 transition-colors"
+            >
               Shop
             </Link>
           </li>
           <li>
-            <Link to="/about" className="hover:text-indigo-500 transition-colors">
+            <Link
+              to="/about"
+              className="hover:text-indigo-500 transition-colors"
+            >
               About
             </Link>
           </li>
           <li>
-            <Link to="/library" className="hover:text-indigo-500 transition-colors">
+            <Link
+              to="/library"
+              className="hover:text-indigo-500 transition-colors"
+            >
               My Library
             </Link>
           </li>
         </ul>
 
         {/* === RIGHT ACTIONS === */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           {/* Dark Mode Toggle */}
           <button
             onClick={toggleDarkMode}
@@ -76,7 +91,7 @@ export default function Navbar() {
             )}
           </button>
 
-          {/* Hamburger Menu (Mobile) */}
+          {/* Mobile Menu Button */}
           <button
             onClick={toggleMenu}
             className="md:hidden p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 transition"
@@ -88,84 +103,50 @@ export default function Navbar() {
             )}
           </button>
         </div>
-
-        {/* === Mobile Menu (Slide-In) === */}
-        <div
-          className={`fixed top-0 right-0 h-full w-[70%] ${
-            darkMode ? "bg-gray-900" : "bg-white"
-          } shadow-2xl transform ${
-            menuOpen ? "translate-x-0" : "translate-x-full"
-          } transition-transform duration-300 ease-in-out z-50 border-l border-gray-200 dark:border-gray-700`}
-        >
-          <div className="flex justify-between items-center p-5 border-b border-gray-300 dark:border-gray-700">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-              Menu
-            </h2>
-            <button onClick={toggleMenu}>
-              <X className="w-6 h-6 text-gray-700 dark:text-gray-200" />
-            </button>
-          </div>
-
-          <ul className="flex flex-col items-start p-5 space-y-6 font-medium text-lg">
-            <li>
-              <Link
-                to="/"
-                className="text-gray-800 dark:text-gray-200 hover:text-indigo-600 transition-colors"
-                onClick={toggleMenu}
-              >
-                Home
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/comics"
-                className="text-gray-800 dark:text-gray-200 hover:text-indigo-600 transition-colors"
-                onClick={toggleMenu}
-              >
-                Graphic Novels
-              </Link>
-            </li>
-             <li>
-              <Link
-                to="/comics"
-                className="text-gray-800 dark:text-gray-200 hover:text-indigo-600 transition-colors"
-                onClick={toggleMenu}
-              >
-                Web Novels
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/shop"
-                className="text-gray-800 dark:text-gray-200 hover:text-indigo-600 transition-colors"
-                onClick={toggleMenu}
-              >
-                Shop
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/about"
-                className="text-gray-800 dark:text-gray-200 hover:text-indigo-600 transition-colors"
-                onClick={toggleMenu}
-              >
-                About
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/library"
-                className="text-gray-800 dark:text-gray-200 hover:text-indigo-600 transition-colors"
-                onClick={toggleMenu}
-              >
-                My Library
-              </Link>
-            </li>
-          </ul>
-        </div>
       </div>
 
-      {/* === Overlay when menu is open === */}
+      {/* === MOBILE SLIDE-IN MENU === */}
+      <div
+        className={`fixed top-0 right-0 h-full w-[75%] sm:w-[60%] md:hidden ${
+          darkMode ? "bg-gray-900" : "bg-white"
+        } shadow-2xl transform ${
+          menuOpen ? "translate-x-0" : "translate-x-full"
+        } transition-transform duration-300 ease-in-out z-50 border-l border-gray-200 dark:border-gray-700`}
+      >
+        {/* Menu Header */}
+        <div className="flex justify-between items-center p-5 border-b border-gray-300 dark:border-gray-700">
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+            Menu
+          </h2>
+          <button onClick={toggleMenu}>
+            <X className="w-6 h-6 text-gray-700 dark:text-gray-200" />
+          </button>
+        </div>
+
+        {/* Menu Links */}
+        <ul className="flex flex-col items-start p-6 space-y-5 font-medium text-base">
+          {[
+            { name: "Home", path: "/" },
+            { name: "Graphic Novels", path: "/comics" },
+            { name: "Web Novels", path: "/comics" },
+            { name: "Shop", path: "/shop" },
+            { name: "About", path: "/about" },
+            { name: "My Library", path: "/library" },
+          ].map((item, idx) => (
+            <li key={idx}>
+              <Link
+                to={item.path}
+                className="text-gray-800 dark:text-gray-200 hover:text-indigo-600 transition-colors"
+                onClick={toggleMenu}
+              >
+                {item.name}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* === DARK OVERLAY WHEN MENU IS OPEN === */}
       {menuOpen && (
         <div
           onClick={toggleMenu}
