@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { useLibrary } from "../context/LibraryContext"; // ✅ Import LibraryContext
+import { useLibrary } from "../context/LibraryContext";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 40 },
@@ -12,7 +12,7 @@ const fadeUp = {
 };
 
 const BookSection = ({ title, books }) => {
-  const { library, addToLibrary } = useLibrary(); // ✅ Access both
+  const { library, addToLibrary } = useLibrary();
 
   return (
     <section className="py-16 px-6 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
@@ -29,34 +29,40 @@ const BookSection = ({ title, books }) => {
         </motion.h2>
 
         {/* Book grid */}
-        <div className="grid gap-4 grid-cols-3 xs:grid-cols-4 sm:grid-cols-5 md:grid-cols-5 lg:grid-cols-6">
+        <div className="grid gap-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           {books.map((book, index) => {
-            const isAdded = library.some((item) => item.id === book.id); // ✅ Check if already added
+            const isAdded = library.some((item) => item.id === book.id);
 
             return (
-              <motion.div
-                key={index}
-                className="relative group overflow-hidden rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 bg-white dark:bg-gray-800"
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.2 }}
-                variants={{
-                  hidden: { opacity: 0, y: 60 },
-                  visible: {
-                    opacity: 1,
-                    y: 0,
-                    transition: { duration: 0.6, delay: index * 0.1 },
-                  },
-                }}
-              >
-                <img
-                  src={book.img}
-                  alt={book.title}
-                  className="w-full h-55 object-cover group-hover:scale-105 transition-transform duration-500"
-                />
+             <motion.div
+  key={index}
+  className="relative group overflow-hidden rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 bg-transparent"
+  initial="hidden"
+  whileInView="visible"
+  viewport={{ once: true, amount: 0.2 }}
+  variants={{
+    hidden: { opacity: 0, y: 60 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.6, delay: index * 0.1 },
+    },
+  }}
+>
+  <img
+    src={book.img}
+    alt={book.title}
+    className="
+      w-full aspect-[2/3]
+      object-cover rounded-2xl
+      group-hover:scale-105
+      transition-transform duration-500
+    "
+  />
+
 
                 {/* Overlay */}
-                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 sm:group-hover:bg-opacity-40 flex flex-col justify-center items-center text-center transition-all duration-300">
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 flex flex-col justify-center items-center text-center transition-all duration-300">
                   <h3 className="text-white text-lg font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     {book.title}
                   </h3>
@@ -66,7 +72,6 @@ const BookSection = ({ title, books }) => {
                       Read Online
                     </button>
 
-                    {/* ✅ Add to Library / Added button */}
                     <button
                       onClick={() => !isAdded && addToLibrary(book)}
                       disabled={isAdded}
