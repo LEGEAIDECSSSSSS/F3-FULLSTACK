@@ -1,22 +1,24 @@
 // src/components/FeaturedComics.js
 import React from "react";
 import { motion } from "framer-motion";
+import bg_dark from "../Images/bg_dark.jpg"
+import { img } from "framer-motion/client";
 
 const comics = [
   {
-    title: "The Orisha Chronicles",
+    title: "The Orisha Chronicles", 
     genre: "Fantasy • Adventure",
-    image: "/images/orisha.jpg",
+    image: bg_dark,
   },
   {
     title: "Neon Shadows",
     genre: "Cyberpunk • Thriller",
-    image: "/images/neon.jpg",
+    image: bg_dark,
   },
   {
     title: "The Forgotten Blade",
     genre: "Action • Mystery",
-    image: "/images/blade.jpg",
+    image: bg_dark,
   },
 ];
 
@@ -38,7 +40,7 @@ const FeaturedComics = () => {
           viewport={{ once: true }}
           variants={fadeUp}
         >
-          Featured Comics
+          Featured Novels
         </motion.h2>
 
         {/* Comic cards */}
