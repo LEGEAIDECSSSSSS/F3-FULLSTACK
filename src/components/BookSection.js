@@ -54,7 +54,7 @@ const BookSection = ({ title, books }) => {
     src={book.img}
     alt={book.title}
     className="
-      w-full aspect-[3/3]
+      w-full aspect-[2/3]
       object-cover rounded-2xl
       group-hover:scale-105
       transition-transform duration-500
