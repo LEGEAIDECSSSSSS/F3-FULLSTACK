@@ -20,7 +20,7 @@ const Hero = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           className="text-5xl md:text-6xl font-extrabold text-white drop-shadow-lg"
-        >Let us take you to a world only we can guide you through.
+        >Let us take you to a world only we have the map to.
           
         </motion.h1>
 
