@@ -2,7 +2,10 @@
 import React, { useState } from "react";
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-
+import { AuthProvider } from "./context/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
+import LoginPage from "./pages/LoginPage";
+import SignupPage from "./pages/SignupPage";
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import BookSection from "./components/BookSection";
@@ -76,9 +79,11 @@ function App() {
 
   return (
     <LibraryProvider>
+     <AuthProvider>
       <Router>
         <AppContent darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
       </Router>
+     </AuthProvider>
     </LibraryProvider>
   );
 }
@@ -103,7 +108,14 @@ function AppContent({ darkMode, toggleDarkMode }) {
             />
           }
         />
-        <Route path="/library" element={<LibraryPage />} />
+         <Route path="/library" element={
+          <ProtectedRoute>
+            <LibraryPage />
+          </ProtectedRoute>
+        } 
+      />
+         <Route path="/login" element={<LoginPage />} />
+         <Route path="/signup" element={<SignupPage />} />
       </Routes>
     </div>
   );
