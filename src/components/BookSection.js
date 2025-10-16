@@ -29,7 +29,8 @@ const BookSection = ({ title, books }) => {
         </motion.h2>
 
         {/* Book grid */}
-        <div className="grid gap-6 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+       <div className="grid gap-4 grid-cols-4 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-6">
+
           {books.map((book, index) => {
             const isAdded = library.some((item) => item.id === book.id);
 
@@ -53,7 +54,7 @@ const BookSection = ({ title, books }) => {
     src={book.img}
     alt={book.title}
     className="
-      w-full aspect-[2/3]
+      w-full aspect-[3/3]
       object-cover rounded-2xl
       group-hover:scale-105
       transition-transform duration-500
