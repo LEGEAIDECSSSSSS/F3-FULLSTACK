@@ -25,7 +25,7 @@ const categories = [
     ],
   },
   {
-    title: "Best Sellers",
+    title: "Web Novels",
     books: [
       { id: 6, title: "Crimson Skies", img: bg_dark, price: 15 },
       { id: 7, title: "The Lost Path", img: bg_dark, price: 17 },
@@ -35,7 +35,7 @@ const categories = [
     ],
   },
   {
-    title: "Fantasy & Adventure",
+    title: "Graphic Novels",
     books: [
       { id: 11, title: "Crown of Mist", img: bg_dark, price: 14 },
       { id: 12, title: "Warden of Fire", img: bg_dark, price: 16 },
