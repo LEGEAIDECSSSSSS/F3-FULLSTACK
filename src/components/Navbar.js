@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Moon, Sun, X, Menu } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -11,10 +11,35 @@ export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
+  // ✅ Sync with system theme or saved user preference
+  useEffect(() => {
+    const isDark =
+      localStorage.theme === "dark" ||
+      (!("theme" in localStorage) &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches);
+
+    if (isDark) {
+      document.documentElement.classList.add("dark");
+      setDarkMode(true);
+    } else {
+      document.documentElement.classList.remove("dark");
+      setDarkMode(false);
+    }
+  }, []);
+
   const toggleDarkMode = () => {
     const html = document.documentElement;
-    html.classList.toggle("dark");
-    setDarkMode(!darkMode);
+    const newMode = !darkMode;
+
+    if (newMode) {
+      html.classList.add("dark");
+      localStorage.theme = "dark";
+    } else {
+      html.classList.remove("dark");
+      localStorage.theme = "light";
+    }
+
+    setDarkMode(newMode);
   };
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
@@ -63,11 +88,15 @@ export default function Navbar() {
               About
             </Link>
           </li>
-          <li>
-            <Link to="/library" className="hover:text-indigo-500 transition-colors">
-              My Library
-            </Link>
-          </li>
+
+          {/* Only show My Library if logged in */}
+          {user && (
+            <li>
+              <Link to="/library" className="hover:text-indigo-500 transition-colors">
+                My Library
+              </Link>
+            </li>
+          )}
 
           {/* === AUTH LINKS === */}
           {!user ? (
@@ -150,18 +179,19 @@ export default function Navbar() {
             { name: "Web Novels", path: "/comics" },
             { name: "Shop", path: "/shop" },
             { name: "About", path: "/about" },
-            { name: "My Library", path: "/library" },
-          ].map((item, idx) => (
-            <li key={idx}>
-              <Link
-                to={item.path}
-                className="text-gray-800 dark:text-gray-200 hover:text-indigo-600 transition-colors"
-                onClick={toggleMenu}
-              >
-                {item.name}
-              </Link>
-            </li>
-          ))}
+          ]
+            .concat(user ? [{ name: "My Library", path: "/library" }] : [])
+            .map((item, idx) => (
+              <li key={idx}>
+                <Link
+                  to={item.path}
+                  className="text-gray-800 dark:text-gray-200 hover:text-indigo-600 transition-colors"
+                  onClick={toggleMenu}
+                >
+                  {item.name}
+                </Link>
+              </li>
+            ))}
 
           {/* === AUTH LINKS MOBILE === */}
           {!user ? (
