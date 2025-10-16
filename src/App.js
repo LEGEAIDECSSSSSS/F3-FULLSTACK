@@ -1,5 +1,8 @@
+// src/App.js
 import React, { useState } from "react";
 import "./App.css";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import BookSection from "./components/BookSection";
@@ -7,8 +10,8 @@ import FeaturedComics from "./components/FeaturedComics";
 import Newsletter from "./components/Newsletter";
 import About from "./components/About";
 import Footer from "./components/Footer";
-import bg_dark from "./Images/bg_dark.jpg";
-import { useLibrary } from "./context/LibraryContext"; // ✅ Import Library Hook
+import LibraryPage from "./pages/LibraryPage";
+import { LibraryProvider, useLibrary } from "./context/LibraryContext";
 
 const categories = [
   {
@@ -43,15 +46,45 @@ const categories = [
   },
 ];
 
+// 🏠 HomePage component
+const HomePage = ({ addToLibrary, darkMode, toggleDarkMode }) => (
+  <>
+    <Navbar toggleDarkMode={toggleDarkMode} darkMode={darkMode} />
+    <Hero />
+    {categories.map((category, i) => (
+      <BookSection
+        key={i}
+        title={category.title}
+        books={category.books}
+        addToLibrary={addToLibrary}
+      />
+    ))}
+    <FeaturedComics />
+    <Newsletter />
+    <About />
+    <Footer />
+  </>
+);
+
 function App() {
   const [darkMode, setDarkMode] = useState(false);
-  const { addToLibrary } = useLibrary(); // ✅ Library management
 
-  // ✅ Toggle Dark Mode
   const toggleDarkMode = () => {
     document.documentElement.classList.toggle("dark");
     setDarkMode(!darkMode);
   };
+
+  return (
+    <LibraryProvider>
+      <Router>
+        <AppContent darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+      </Router>
+    </LibraryProvider>
+  );
+}
+
+function AppContent({ darkMode, toggleDarkMode }) {
+  const { addToLibrary } = useLibrary();
 
   return (
     <div
@@ -59,25 +92,19 @@ function App() {
         darkMode ? "bg-gray-950 text-white" : "bg-gray-50 text-gray-900"
       }`}
     >
-      {/* Navbar (Dark Mode Only) */}
-      <Navbar toggleDarkMode={toggleDarkMode} darkMode={darkMode} />
-
-      <Hero />
-
-      {/* Book Categories */}
-      {categories.map((category, i) => (
-        <BookSection
-          key={i}
-          title={category.title}
-          books={category.books}
-          addToLibrary={addToLibrary} // ✅ changed from addToCart
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <HomePage
+              addToLibrary={addToLibrary}
+              darkMode={darkMode}
+              toggleDarkMode={toggleDarkMode}
+            />
+          }
         />
-      ))}
-
-      <FeaturedComics />
-      <Newsletter />
-      <About />
-      <Footer />
+        <Route path="/library" element={<LibraryPage />} />
+      </Routes>
     </div>
   );
 }

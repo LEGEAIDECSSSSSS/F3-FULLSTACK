@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Moon, Sun, X, Menu } from "lucide-react";
+import { Link } from "react-router-dom";
 import LogoBlack from "../Images/file_00000000c6b862438fe1abb3f4152911.png";
 import LogoWhite from "../Images/LOGO LIGHT 1.png";
 
@@ -19,21 +20,41 @@ export default function Navbar() {
     <nav className="w-full fixed top-0 left-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 transition-all duration-300">
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3 relative">
         {/* === LOGO === */}
-        <div className="flex items-center">
+        <Link to="/" className="flex items-center">
           <img
             src={darkMode ? LogoWhite : LogoBlack}
             alt="BookVerse Logo"
             className="h-[65px] w-auto transition-all duration-300 cursor-pointer"
           />
-        </div>
+        </Link>
 
         {/* === NAV LINKS (Desktop) === */}
         <ul className="hidden md:flex items-center gap-8 text-gray-700 dark:text-gray-300 font-medium">
-          <li className="hover:text-indigo-500 transition-colors cursor-pointer">Home</li>
-          <li className="hover:text-indigo-500 transition-colors cursor-pointer">Comics</li>
-          <li className="hover:text-indigo-500 transition-colors cursor-pointer">Shop</li>
-          <li className="hover:text-indigo-500 transition-colors cursor-pointer">About</li>
-            <li className="hover:text-indigo-500 transition-colors cursor-pointer">My Library</li>
+          <li>
+            <Link to="/" className="hover:text-indigo-500 transition-colors">
+              Home
+            </Link>
+          </li>
+          <li>
+            <Link to="/comics" className="hover:text-indigo-500 transition-colors">
+              Comics
+            </Link>
+          </li>
+          <li>
+            <Link to="/shop" className="hover:text-indigo-500 transition-colors">
+              Shop
+            </Link>
+          </li>
+          <li>
+            <Link to="/about" className="hover:text-indigo-500 transition-colors">
+              About
+            </Link>
+          </li>
+          <li>
+            <Link to="/library" className="hover:text-indigo-500 transition-colors">
+              My Library
+            </Link>
+          </li>
         </ul>
 
         {/* === RIGHT ACTIONS === */}
@@ -69,7 +90,7 @@ export default function Navbar() {
             darkMode ? "bg-gray-900" : "bg-white"
           } shadow-2xl transform ${
             menuOpen ? "translate-x-0" : "translate-x-full"
-          } transition-transform duration-300 ease-in-out z-50 border-l border-gray-200 dark:border-gray-700 bg-opacity-100`}
+          } transition-transform duration-300 ease-in-out z-50 border-l border-gray-200 dark:border-gray-700`}
         >
           <div className="flex justify-between items-center p-5 border-b border-gray-300 dark:border-gray-700">
             <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
@@ -81,21 +102,51 @@ export default function Navbar() {
           </div>
 
           <ul className="flex flex-col items-start p-5 space-y-6 font-medium text-lg">
-            <li className="text-gray-800 dark:text-gray-200 hover:text-indigo-600 transition-colors cursor-pointer">
-              Home
+            <li>
+              <Link
+                to="/"
+                className="text-gray-800 dark:text-gray-200 hover:text-indigo-600 transition-colors"
+                onClick={toggleMenu}
+              >
+                Home
+              </Link>
             </li>
-            <li className="text-gray-800 dark:text-gray-200 hover:text-indigo-600 transition-colors cursor-pointer">
-              Comics
+            <li>
+              <Link
+                to="/comics"
+                className="text-gray-800 dark:text-gray-200 hover:text-indigo-600 transition-colors"
+                onClick={toggleMenu}
+              >
+                Comics
+              </Link>
             </li>
-            <li className="text-gray-800 dark:text-gray-200 hover:text-indigo-600 transition-colors cursor-pointer">
-              Shop
+            <li>
+              <Link
+                to="/shop"
+                className="text-gray-800 dark:text-gray-200 hover:text-indigo-600 transition-colors"
+                onClick={toggleMenu}
+              >
+                Shop
+              </Link>
             </li>
-            <li className="text-gray-800 dark:text-gray-200 hover:text-indigo-600 transition-colors cursor-pointer">
-              About
+            <li>
+              <Link
+                to="/about"
+                className="text-gray-800 dark:text-gray-200 hover:text-indigo-600 transition-colors"
+                onClick={toggleMenu}
+              >
+                About
+              </Link>
             </li>
-              <li className="text-gray-800 dark:text-gray-200 hover:text-indigo-600 transition-colors cursor-pointer">
+            <li>
+              <Link
+                to="/library"
+                className="text-gray-800 dark:text-gray-200 hover:text-indigo-600 transition-colors"
+                onClick={toggleMenu}
+              >
                 My Library
-              </li>
+              </Link>
+            </li>
           </ul>
         </div>
       </div>
