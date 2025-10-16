@@ -37,7 +37,12 @@ export default function Navbar() {
           </li>
           <li>
             <Link to="/comics" className="hover:text-indigo-500 transition-colors">
-              Comics
+              GraphicNovels
+            </Link>
+          </li>
+          <li>
+            <Link to="/comics" className="hover:text-indigo-500 transition-colors">
+              WebNovels
             </Link>
           </li>
           <li>
@@ -117,7 +122,16 @@ export default function Navbar() {
                 className="text-gray-800 dark:text-gray-200 hover:text-indigo-600 transition-colors"
                 onClick={toggleMenu}
               >
-                Comics
+                Graphic Novels
+              </Link>
+            </li>
+             <li>
+              <Link
+                to="/comics"
+                className="text-gray-800 dark:text-gray-200 hover:text-indigo-600 transition-colors"
+                onClick={toggleMenu}
+              >
+                Web Novels
               </Link>
             </li>
             <li>
