@@ -1,3 +1,4 @@
+// src/components/Navbar.jsx
 import { useState, useEffect } from "react";
 import { Moon, Sun, X, Menu } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -11,12 +12,11 @@ export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  // ✅ Sync with system theme or saved user preference
+  // Sync darkMode with localStorage / system preference on mount
   useEffect(() => {
-    const isDark =
-      localStorage.theme === "dark" ||
-      (!("theme" in localStorage) &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches);
+    const saved = localStorage.getItem("theme");
+    const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const isDark = saved === "dark" || (!saved && prefersDark);
 
     if (isDark) {
       document.documentElement.classList.add("dark");
@@ -25,6 +25,14 @@ export default function Navbar() {
       document.documentElement.classList.remove("dark");
       setDarkMode(false);
     }
+
+    // close mobile menu on route change / resize (optional safety)
+    const onResize = () => {
+      if (window.innerWidth >= 768 && menuOpen) setMenuOpen(false);
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const toggleDarkMode = () => {
@@ -33,105 +41,89 @@ export default function Navbar() {
 
     if (newMode) {
       html.classList.add("dark");
-      localStorage.theme = "dark";
+      localStorage.setItem("theme", "dark");
     } else {
       html.classList.remove("dark");
-      localStorage.theme = "light";
+      localStorage.setItem("theme", "light");
     }
 
     setDarkMode(newMode);
   };
-
-  const toggleMenu = () => setMenuOpen(!menuOpen);
 
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
 
+  const toggleMenu = () => setMenuOpen((s) => !s);
+
   return (
-    <nav className="fixed top-0 left-0 w-full z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 transition-all duration-300">
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3">
-        {/* === LOGO === */}
-        <Link to="/" className="flex items-center">
+    <nav
+      className="fixed top-0 left-0 w-full z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-200 dark:border-gray-700 transition-all duration-300"
+      aria-label="Main navigation"
+    >
+      <div className="flex items-center justify-between w-full px-4 sm:px-6 lg:px-10 xl:px-16 2xl:px-24 py-3">
+        {/* LEFT: Logo */}
+        <Link to="/" className="flex items-center shrink-0">
           <img
             src={darkMode ? LogoWhite : LogoBlack}
-            alt="BookVerse Logo"
-            className="h-[60px] w-auto transition-all duration-300 cursor-pointer"
+            alt="Site logo"
+            className="h-[56px] w-auto transition-all duration-300"
           />
         </Link>
 
-        {/* === DESKTOP NAV LINKS === */}
-        <ul className="hidden md:flex items-center gap-8 text-gray-700 dark:text-gray-300 font-medium">
-          <li>
-            <Link to="/" className="hover:text-indigo-500 transition-colors">
+        {/* CENTER: Nav links (hidden on small screens) */}
+        <ul
+          className="hidden md:flex flex-1 justify-center items-center gap-6 lg:gap-10 text-gray-700 dark:text-gray-300 font-medium
+                     text-sm sm:text-base lg:text-lg"
+          role="menubar"
+        >
+          <li role="none">
+            <Link role="menuitem" to="/" className="hover:text-indigo-500 transition px-1">
               Home
             </Link>
           </li>
-          <li>
-            <Link to="/comics" className="hover:text-indigo-500 transition-colors">
+
+          <li role="none">
+            <Link role="menuitem" to="/comics" className="hover:text-indigo-500 transition px-1">
               Graphic Novels
             </Link>
           </li>
-          <li>
-            <Link to="/comics" className="hover:text-indigo-500 transition-colors">
+
+          <li role="none">
+            <Link role="menuitem" to="/web-novels" className="hover:text-indigo-500 transition px-1">
               Web Novels
             </Link>
           </li>
-          <li>
-            <Link to="/shop" className="hover:text-indigo-500 transition-colors">
+
+          <li role="none">
+            <Link role="menuitem" to="/shop" className="hover:text-indigo-500 transition px-1">
               Shop
             </Link>
           </li>
-          <li>
-            <Link to="/about" className="hover:text-indigo-500 transition-colors">
+
+          <li role="none">
+            <Link role="menuitem" to="/about" className="hover:text-indigo-500 transition px-1">
               About
             </Link>
           </li>
 
-          {/* Only show My Library if logged in */}
+          {/* Show My Library only when user is authenticated */}
           {user && (
-            <li>
-              <Link to="/library" className="hover:text-indigo-500 transition-colors">
+            <li role="none">
+              <Link role="menuitem" to="/library" className="hover:text-indigo-500 transition px-1">
                 My Library
               </Link>
             </li>
           )}
-
-          {/* === AUTH LINKS === */}
-          {!user ? (
-            <>
-              <li>
-                <Link to="/login" className="hover:text-indigo-500 transition-colors">
-                  Login
-                </Link>
-              </li>
-              <li>
-                <Link to="/signup" className="hover:text-indigo-500 transition-colors">
-                  Signup
-                </Link>
-              </li>
-            </>
-          ) : (
-            <li className="flex items-center gap-3">
-              <span className="text-sm text-gray-500 dark:text-gray-400">
-                Hi, {user.username}
-              </span>
-              <button
-                onClick={handleLogout}
-                className="bg-indigo-500 text-white px-3 py-1 rounded-md hover:bg-indigo-600 transition"
-              >
-                Logout
-              </button>
-            </li>
-          )}
         </ul>
 
-        {/* === RIGHT ACTIONS === */}
-        <div className="flex items-center gap-3">
+        {/* RIGHT: Dark toggle, auth buttons, mobile menu button */}
+        <div className="flex items-center gap-3 sm:gap-4">
           {/* Dark Mode Toggle */}
           <button
             onClick={toggleDarkMode}
+            aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
             className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:scale-105 transition-transform"
           >
             {darkMode ? (
@@ -141,10 +133,43 @@ export default function Navbar() {
             )}
           </button>
 
-          {/* Mobile Menu Button */}
+          {/* Auth Buttons (desktop) */}
+          <div className="hidden md:flex items-center gap-3">
+            {!user ? (
+              <>
+                <Link
+                  to="/login"
+                  className="text-gray-700 dark:text-gray-300 hover:text-indigo-500 text-sm sm:text-base font-medium transition"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/signup"
+                  className="bg-indigo-500 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-md text-sm sm:text-base hover:bg-indigo-600 transition"
+                >
+                  Signup
+                </Link>
+              </>
+            ) : (
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-gray-600 dark:text-gray-300 hidden lg:inline">
+                  Hi, {user.username}
+                </span>
+                <button
+                  onClick={handleLogout}
+                  className="bg-indigo-500 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-md text-sm sm:text-base hover:bg-indigo-600 transition"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Mobile menu button */}
           <button
             onClick={toggleMenu}
             className="md:hidden p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-800 transition"
+            aria-label="Open menu"
           >
             {menuOpen ? (
               <X className="w-6 h-6 text-gray-700 dark:text-gray-200" />
@@ -155,87 +180,92 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* === MOBILE SLIDE-IN MENU === */}
+      {/* MOBILE SLIDE-IN MENU */}
       <div
-        className={`fixed top-0 right-0 h-full w-[75%] sm:w-[60%] md:hidden ${
-          darkMode ? "bg-gray-900" : "bg-white"
-        } shadow-2xl transform ${
-          menuOpen ? "translate-x-0" : "translate-x-full"
-        } transition-transform duration-300 ease-in-out z-50 border-l border-gray-200 dark:border-gray-700`}
+        className={`fixed top-0 right-0 h-full w-[75%] sm:w-[60%] md:hidden z-50 transform transition-transform duration-300 ease-in-out
+                    ${menuOpen ? "translate-x-0" : "translate-x-full"}
+                    ${darkMode ? "bg-gray-900" : "bg-white"} shadow-2xl border-l ${darkMode ? "border-gray-700" : "border-gray-200"}`}
+        role="dialog"
+        aria-modal="true"
       >
-        <div className="flex justify-between items-center p-5 border-b border-gray-300 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-            Menu
-          </h2>
-          <button onClick={toggleMenu}>
+        {/* header */}
+        <div className="flex items-center justify-between p-5 border-b ${darkMode ? 'border-gray-700' : 'border-gray-300'}">
+          <h3 className={`text-lg font-semibold ${darkMode ? "text-gray-100" : "text-gray-800"}`}>Menu</h3>
+          <button onClick={toggleMenu} aria-label="Close menu">
             <X className="w-6 h-6 text-gray-700 dark:text-gray-200" />
           </button>
         </div>
 
-        <ul className="flex flex-col items-start p-6 space-y-5 font-medium text-base">
-          {[
-            { name: "Home", path: "/" },
-            { name: "Graphic Novels", path: "/comics" },
-            { name: "Web Novels", path: "/comics" },
-            { name: "Shop", path: "/shop" },
-            { name: "About", path: "/about" },
-          ]
-            .concat(user ? [{ name: "My Library", path: "/library" }] : [])
-            .map((item, idx) => (
-              <li key={idx}>
-                <Link
-                  to={item.path}
-                  className="text-gray-800 dark:text-gray-200 hover:text-indigo-600 transition-colors"
-                  onClick={toggleMenu}
-                >
-                  {item.name}
+        {/* links */}
+        <nav className="p-6">
+          <ul className="flex flex-col gap-5 font-medium text-base">
+            <li>
+              <Link to="/" onClick={toggleMenu} className="block text-gray-800 dark:text-gray-200 hover:text-indigo-600 transition">
+                Home
+              </Link>
+            </li>
+            <li>
+              <Link to="/comics" onClick={toggleMenu} className="block text-gray-800 dark:text-gray-200 hover:text-indigo-600 transition">
+                Graphic Novels
+              </Link>
+            </li>
+            <li>
+              <Link to="/web-novels" onClick={toggleMenu} className="block text-gray-800 dark:text-gray-200 hover:text-indigo-600 transition">
+                Web Novels
+              </Link>
+            </li>
+            <li>
+              <Link to="/shop" onClick={toggleMenu} className="block text-gray-800 dark:text-gray-200 hover:text-indigo-600 transition">
+                Shop
+              </Link>
+            </li>
+            <li>
+              <Link to="/about" onClick={toggleMenu} className="block text-gray-800 dark:text-gray-200 hover:text-indigo-600 transition">
+                About
+              </Link>
+            </li>
+
+            {user && (
+              <li>
+                <Link to="/library" onClick={toggleMenu} className="block text-gray-800 dark:text-gray-200 hover:text-indigo-600 transition">
+                  My Library
                 </Link>
               </li>
-            ))}
+            )}
+          </ul>
 
-          {/* === AUTH LINKS MOBILE === */}
-          {!user ? (
-            <>
-              <li>
-                <Link
-                  to="/login"
-                  className="text-gray-800 dark:text-gray-200 hover:text-indigo-600 transition-colors"
-                  onClick={toggleMenu}
-                >
+          {/* mobile auth actions */}
+          <div className="mt-8 border-t pt-6">
+            {!user ? (
+              <div className="flex flex-col gap-3">
+                <Link to="/login" onClick={toggleMenu} className="text-gray-800 dark:text-gray-200 hover:text-indigo-600 transition">
                   Login
                 </Link>
-              </li>
-              <li>
-                <Link
-                  to="/signup"
-                  className="text-gray-800 dark:text-gray-200 hover:text-indigo-600 transition-colors"
-                  onClick={toggleMenu}
-                >
+                <Link to="/signup" onClick={toggleMenu} className="bg-indigo-500 text-white px-4 py-2 rounded-md text-center hover:bg-indigo-600 transition">
                   Signup
                 </Link>
-              </li>
-            </>
-          ) : (
-            <li>
-              <button
-                onClick={() => {
-                  handleLogout();
-                  toggleMenu();
-                }}
-                className="w-full text-left text-indigo-500 font-semibold hover:text-indigo-600 transition"
-              >
-                Logout ({user.username})
-              </button>
-            </li>
-          )}
-        </ul>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                <span className="text-gray-200">Signed in as <strong>{user.username}</strong></span>
+                <button
+                  onClick={() => { handleLogout(); toggleMenu(); }}
+                  className="bg-indigo-500 text-white px-4 py-2 rounded-md hover:bg-indigo-600 transition"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
+        </nav>
       </div>
 
-      {/* === DARK OVERLAY WHEN MENU IS OPEN === */}
+      {/* OVERLAY when menu open */}
       {menuOpen && (
         <div
           onClick={toggleMenu}
           className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 md:hidden"
+          aria-hidden="true"
         />
       )}
     </nav>
