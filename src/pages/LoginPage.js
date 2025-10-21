@@ -1,58 +1,66 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext"; // ✅ Import your AuthContext
 
-const LoginPage = () => {
-  const [username, setUsername] = useState("");
+export default function Login() {
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const { login } = useAuth();
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth(); // ✅ Access the login function from context
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    const result = login(username, password);
-    if (result.success) navigate("/");
-    else setError(result.message);
+    setLoading(true);
+
+    const result = await login(email, password); // ✅ Use context-based login
+
+    if (result.success) {
+      alert("✅ Login successful!");
+      navigate("/"); // Go back to home
+    } else {
+      alert(result.message || "❌ Login failed. Try again.");
+    }
+
+    setLoading(false);
   };
 
   return (
-    <div className="flex justify-center items-center h-screen bg-gray-900 text-white">
+    <div className="flex justify-center items-center min-h-screen bg-gray-100 dark:bg-gray-900">
       <form
         onSubmit={handleLogin}
-        className="bg-gray-800 p-8 rounded-2xl shadow-lg w-80"
+        className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg w-96"
       >
-        <h2 className="text-2xl mb-4 font-semibold text-center">Login</h2>
-        {error && <p className="text-red-400 mb-3 text-sm">{error}</p>}
+        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800 dark:text-white">
+          Login
+        </h2>
 
         <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          className="w-full p-2 mb-3 rounded bg-gray-700"
+          type="email"
+          placeholder="Email"
+          className="w-full mb-4 p-3 border rounded-lg dark:bg-gray-700 dark:text-white"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
         />
+
         <input
           type="password"
           placeholder="Password"
+          className="w-full mb-6 p-3 border rounded-lg dark:bg-gray-700 dark:text-white"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full p-2 mb-3 rounded bg-gray-700"
+          required
         />
 
-        <button className="w-full bg-emerald-600 hover:bg-emerald-700 py-2 rounded">
-          Login
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-emerald-600 text-white py-3 rounded-lg hover:bg-emerald-700 transition"
+        >
+          {loading ? "Logging in..." : "Login"}
         </button>
-
-        <p className="text-sm text-center mt-3">
-          Don’t have an account?{" "}
-          <Link to="/signup" className="text-emerald-400 hover:underline">
-            Sign up
-          </Link>
-        </p>
       </form>
     </div>
   );
-};
-
-export default LoginPage;
+}

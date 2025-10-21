@@ -5,47 +5,69 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
-  // Load user from localStorage when app starts
+  // Load user when app starts
   useEffect(() => {
     const savedUser = localStorage.getItem("user");
     if (savedUser) setUser(JSON.parse(savedUser));
   }, []);
 
-  // Signup
-  const signup = (username, password) => {
-    const users = JSON.parse(localStorage.getItem("users")) || [];
-    const userExists = users.find((u) => u.username === username);
-    if (userExists) return { success: false, message: "User already exists" };
+  // ✅ Backend Login
+  const login = async (email, password) => {
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-    const newUser = { username, password };
-    users.push(newUser);
-    localStorage.setItem("users", JSON.stringify(users));
-    localStorage.setItem("user", JSON.stringify(newUser));
-    setUser(newUser);
-    return { success: true };
+      const data = await res.json();
+
+      if (!res.ok) {
+        return { success: false, message: data.message || "Login failed" };
+      }
+
+      // Store user and token
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      setUser(data.user);
+
+      return { success: true };
+    } catch (err) {
+      console.error("Login error:", err);
+      return { success: false, message: "Something went wrong" };
+    }
   };
 
-  // Login
-  const login = (username, password) => {
-    const users = JSON.parse(localStorage.getItem("users")) || [];
-    const user = users.find(
-      (u) => u.username === username && u.password === password
-    );
-    if (!user) return { success: false, message: "Invalid credentials" };
-
-    localStorage.setItem("user", JSON.stringify(user));
-    setUser(user);
-    return { success: true };
-  };
-
-  // Logout
+  // ✅ Logout
   const logout = () => {
     localStorage.removeItem("user");
+    localStorage.removeItem("token");
     setUser(null);
   };
 
+  // ✅ Optional: future signup (connects to backend /api/auth/register)
+  const signup = async (email, password) => {
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        return { success: false, message: data.message || "Signup failed" };
+      }
+
+      return { success: true, message: "Signup successful" };
+    } catch (err) {
+      console.error("Signup error:", err);
+      return { success: false, message: "Something went wrong" };
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, signup, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, signup }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,36 +1,95 @@
-// src/context/LibraryContext.jsx
 import { createContext, useContext, useState, useEffect } from "react";
 
 const LibraryContext = createContext();
 
 export const LibraryProvider = ({ children }) => {
   const [library, setLibrary] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const token = localStorage.getItem("token");
 
-  // Load saved library from localStorage on mount
+  // Fetch user library from backend
   useEffect(() => {
-    const savedLibrary = localStorage.getItem("library");
-    if (savedLibrary) setLibrary(JSON.parse(savedLibrary));
-  }, []);
+    const fetchLibrary = async () => {
+      if (!token) {
+        setLibrary([]);
+        setLoading(false);
+        return;
+      }
 
-  // Save to localStorage whenever library changes
-  useEffect(() => {
-    localStorage.setItem("library", JSON.stringify(library));
-  }, [library]);
+      try {
+        const res = await fetch("http://localhost:5000/api/library", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-  // Add book (if not already added)
-  const addToLibrary = (book) => {
-    if (!library.find((item) => item.id === book.id)) {
-      setLibrary([...library, book]);
+        if (!res.ok) throw new Error("Failed to fetch library");
+
+        const data = await res.json();
+        setLibrary(data.books || []);
+      } catch (error) {
+        console.error("Error fetching library:", error);
+        setLibrary([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLibrary();
+  }, [token]);
+
+  // Add book to library
+  const addToLibrary = async (book) => {
+    if (!token) {
+      alert("Please log in to add books to your library.");
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost:5000/api/library/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ book }),
+      });
+
+      if (!res.ok) throw new Error("Failed to add book");
+
+      const data = await res.json();
+      setLibrary(data.books || []);
+    } catch (error) {
+      console.error("Error adding book:", error);
     }
   };
 
-  // Remove book
-  const removeFromLibrary = (id) => {
-    setLibrary(library.filter((item) => item.id !== id));
+  // Remove book from library
+  const removeFromLibrary = async (id) => {
+    if (!token) {
+      alert("Please log in to remove books.");
+      return;
+    }
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/library/remove/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) throw new Error("Failed to remove book");
+
+      const data = await res.json();
+      setLibrary(data.books || []);
+    } catch (error) {
+      console.error("Error removing book:", error);
+    }
   };
 
   return (
-    <LibraryContext.Provider value={{ library, addToLibrary, removeFromLibrary }}>
+    <LibraryContext.Provider value={{ library, addToLibrary, removeFromLibrary, loading }}>
       {children}
     </LibraryContext.Provider>
   );

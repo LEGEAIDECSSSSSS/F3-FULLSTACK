@@ -1,58 +1,86 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
-const SignupPage = () => {
+export default function Signup() {
   const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const { signup } = useAuth();
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSignup = (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
-    const result = signup(username, password);
-    if (result.success) navigate("/");
-    else setError(result.message);
+    setLoading(true);
+
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.message || "Signup failed");
+        return;
+      }
+
+      alert("Signup successful! Please log in.");
+      navigate("/login");
+    } catch (error) {
+      console.error("Signup error:", error);
+      alert("Something went wrong. Try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="flex justify-center items-center h-screen bg-gray-900 text-white">
+    <div className="flex justify-center items-center min-h-screen bg-gray-100 dark:bg-gray-900">
       <form
         onSubmit={handleSignup}
-        className="bg-gray-800 p-8 rounded-2xl shadow-lg w-80"
+        className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg w-96"
       >
-        <h2 className="text-2xl mb-4 font-semibold text-center">Sign Up</h2>
-        {error && <p className="text-red-400 mb-3 text-sm">{error}</p>}
+        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800 dark:text-white">
+          Sign Up
+        </h2>
 
         <input
           type="text"
           placeholder="Username"
+          className="w-full mb-4 p-3 border rounded-lg dark:bg-gray-700 dark:text-white"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          className="w-full p-2 mb-3 rounded bg-gray-700"
+          required
         />
+
+        <input
+          type="email"
+          placeholder="Email"
+          className="w-full mb-4 p-3 border rounded-lg dark:bg-gray-700 dark:text-white"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+
         <input
           type="password"
           placeholder="Password"
+          className="w-full mb-6 p-3 border rounded-lg dark:bg-gray-700 dark:text-white"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full p-2 mb-3 rounded bg-gray-700"
+          required
         />
 
-        <button className="w-full bg-emerald-600 hover:bg-emerald-700 py-2 rounded">
-          Sign Up
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-emerald-600 text-white py-3 rounded-lg hover:bg-emerald-700 transition"
+        >
+          {loading ? "Signing up..." : "Sign Up"}
         </button>
-
-        <p className="text-sm text-center mt-3">
-          Already have an account?{" "}
-          <Link to="/login" className="text-emerald-400 hover:underline">
-            Login
-          </Link>
-        </p>
       </form>
     </div>
   );
-};
-
-export default SignupPage;
+}
