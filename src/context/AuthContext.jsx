@@ -55,7 +55,7 @@ export const AuthProvider = ({ children }) => {
   // ✅ Signup
   const signup = async (email, password) => {
     try {
-      const res = await fetch(`${API_BASE}/auth/register`, {
+      const res = await fetch(`${API_BASE}/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
