@@ -8,12 +8,16 @@ export default function Signup() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  // ✅ Base API URL (works both locally and on Render)
+  const API_BASE_URL =
+    process.env.REACT_APP_API_URL || "http://localhost:5000";
+
   const handleSignup = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/signup", {
+      const res = await fetch(`${API_BASE_URL}/api/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, email, password }),

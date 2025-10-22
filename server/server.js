@@ -28,7 +28,7 @@ app.use(express.json());
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
-  "https://your-app-name.onrender.com" // 🔹 Replace with your Render frontend URL
+  "https://funficfalls.onrender.com" // 🔹 Replace with your Render frontend URL
 ];
 
 app.use(

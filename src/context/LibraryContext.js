@@ -7,6 +7,10 @@ export const LibraryProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem("token");
 
+  // ✅ Use environment variable (works in CRA)
+  const API_BASE_URL =
+    process.env.REACT_APP_API_URL || "http://localhost:5000";
+
   // Fetch user library from backend
   useEffect(() => {
     const fetchLibrary = async () => {
@@ -17,7 +21,7 @@ export const LibraryProvider = ({ children }) => {
       }
 
       try {
-        const res = await fetch("http://localhost:5000/api/library", {
+        const res = await fetch(`${API_BASE_URL}/api/library`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -36,7 +40,7 @@ export const LibraryProvider = ({ children }) => {
     };
 
     fetchLibrary();
-  }, [token]);
+  }, [token, API_BASE_URL]);
 
   // Add book to library
   const addToLibrary = async (book) => {
@@ -46,7 +50,7 @@ export const LibraryProvider = ({ children }) => {
     }
 
     try {
-      const res = await fetch("http://localhost:5000/api/library/add", {
+      const res = await fetch(`${API_BASE_URL}/api/library/add`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -72,7 +76,7 @@ export const LibraryProvider = ({ children }) => {
     }
 
     try {
-      const res = await fetch(`http://localhost:5000/api/library/remove/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/library/remove/${id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -89,7 +93,9 @@ export const LibraryProvider = ({ children }) => {
   };
 
   return (
-    <LibraryContext.Provider value={{ library, addToLibrary, removeFromLibrary, loading }}>
+    <LibraryContext.Provider
+      value={{ library, addToLibrary, removeFromLibrary, loading }}
+    >
       {children}
     </LibraryContext.Provider>
   );
