@@ -12,19 +12,7 @@ router.get("/", protect, async (req, res) => {
 
 // Add a book
 router.post("/add", protect, async (req, res) => {
-  let { book } = req.body;
-
-  if (!book) {
-    return res.status(400).json({ message: "Book data missing" });
-  }
-
-  // ✅ Ensure image URL is absolute
-  if (book.img && !book.img.startsWith("http")) {
-    const baseUrl = process.env.BASE_URL || "https://funficfalls.onrender.com";
-    // handle both /Images/bg_dark.jpg and ./Images/bg_dark.jpg
-    const cleanPath = book.img.replace(/^\.\//, "").replace(/^\/?/, "/");
-    book.img = `${baseUrl}${cleanPath}`;
-  }
+  const { book } = req.body;
 
   let library = await Library.findOne({ user: req.user.id });
   if (!library) library = await Library.create({ user: req.user.id, books: [] });
