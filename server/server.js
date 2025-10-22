@@ -48,7 +48,8 @@ const __buildpath = path.join(__dirname, "../build");
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(__buildpath));
 
-  app.get("*", (req, res) => {
+  // 🟩 FIXED for Express 5: wildcard route must use "/*"
+  app.get("/*", (req, res) => {
     res.sendFile(path.resolve(__buildpath, "index.html"));
   });
 } else {

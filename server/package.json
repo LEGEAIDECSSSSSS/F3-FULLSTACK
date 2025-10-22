@@ -1,6 +1,7 @@
 {
   "name": "server",
   "version": "1.0.0",
+  "type": "module",
   "description": "Full-stack app (Express + React)",
   "main": "server.js",
   "scripts": {
