@@ -2,6 +2,13 @@ import { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext();
 
+// ✅ Automatically detect whether you're running locally or in production
+const API_BASE =
+  process.env.NODE_ENV === "development"
+    ? "http://localhost:5000/api"
+    : "/api";
+
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
@@ -14,7 +21,7 @@ export const AuthProvider = ({ children }) => {
   // ✅ Backend Login
   const login = async (email, password) => {
     try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
+      const res = await fetch(`${API_BASE}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -45,10 +52,10 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
-  // ✅ Optional: future signup (connects to backend /api/auth/register)
+  // ✅ Signup
   const signup = async (email, password) => {
     try {
-      const res = await fetch("http://localhost:5000/api/auth/register", {
+      const res = await fetch(`${API_BASE}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
