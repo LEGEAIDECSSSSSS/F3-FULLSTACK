@@ -7,11 +7,24 @@ export const LibraryProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem("token");
 
-  // ✅ Use environment variable (works in CRA)
   const API_BASE_URL =
     process.env.REACT_APP_API_URL || "http://localhost:5000";
 
-  // Fetch user library from backend
+  // ✅ Improved Helper: Normalize image URL
+  const resolveImgUrl = (img) => {
+    if (!img) return "/default-cover.jpg";
+
+    // ✅ Case 1: Imported or locally served image (React static files)
+    if (img.startsWith("/") || img.includes("static/")) return img;
+
+    // ✅ Case 2: Fully qualified external link
+    if (img.startsWith("http")) return img;
+
+    // ✅ Case 3: Backend-served path (e.g., from /uploads)
+    return `${API_BASE_URL}${img.startsWith("/") ? img : `/${img}`}`;
+  };
+
+  // Fetch user library
   useEffect(() => {
     const fetchLibrary = async () => {
       if (!token) {
@@ -30,7 +43,13 @@ export const LibraryProvider = ({ children }) => {
         if (!res.ok) throw new Error("Failed to fetch library");
 
         const data = await res.json();
-        setLibrary(data.books || []);
+
+        const updatedBooks = (data.books || []).map((book) => ({
+          ...book,
+          img: resolveImgUrl(book.img),
+        }));
+
+        setLibrary(updatedBooks);
       } catch (error) {
         console.error("Error fetching library:", error);
         setLibrary([]);
@@ -42,7 +61,7 @@ export const LibraryProvider = ({ children }) => {
     fetchLibrary();
   }, [token, API_BASE_URL]);
 
-  // Add book to library
+  // Add book
   const addToLibrary = async (book) => {
     if (!token) {
       alert("Please log in to add books to your library.");
@@ -50,25 +69,35 @@ export const LibraryProvider = ({ children }) => {
     }
 
     try {
+      const fullImgUrl = resolveImgUrl(book.img);
+
       const res = await fetch(`${API_BASE_URL}/api/library/add`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ book }),
+        body: JSON.stringify({
+          book: { ...book, img: fullImgUrl },
+        }),
       });
 
       if (!res.ok) throw new Error("Failed to add book");
 
       const data = await res.json();
-      setLibrary(data.books || []);
+
+      const updatedBooks = (data.books || []).map((b) => ({
+        ...b,
+        img: resolveImgUrl(b.img),
+      }));
+
+      setLibrary(updatedBooks);
     } catch (error) {
       console.error("Error adding book:", error);
     }
   };
 
-  // Remove book from library
+  // Remove book
   const removeFromLibrary = async (id) => {
     if (!token) {
       alert("Please log in to remove books.");
@@ -86,7 +115,13 @@ export const LibraryProvider = ({ children }) => {
       if (!res.ok) throw new Error("Failed to remove book");
 
       const data = await res.json();
-      setLibrary(data.books || []);
+
+      const updatedBooks = (data.books || []).map((b) => ({
+        ...b,
+        img: resolveImgUrl(b.img),
+      }));
+
+      setLibrary(updatedBooks);
     } catch (error) {
       console.error("Error removing book:", error);
     }
