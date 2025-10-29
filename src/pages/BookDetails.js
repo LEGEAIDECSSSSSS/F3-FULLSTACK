@@ -4,13 +4,13 @@ import booksData from "../data/booksData";
 import { FaStar, FaArrowLeft, FaRegBookmark, FaComments } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { useLibrary } from "../context/LibraryContext";
-import { useAuth } from "../context/AuthContext"; // your auth hook
+import { useAuth } from "../context/AuthContext";
 import api from "../api/axios";
 
 const BookDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { addToLibrary, library } = useLibrary();
+  const { addToLibrary, removeFromLibrary, library } = useLibrary();
   const { user } = useAuth() || {};
 
   const [book, setBook] = useState(null);
@@ -18,17 +18,38 @@ const BookDetails = () => {
   const [avgRating, setAvgRating] = useState(null);
   const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState("");
+  const [added, setAdded] = useState(false);
 
   const userId = user?._id || user?.id;
 
-  // find local book as fallback
+  // --- Find book locally
   useEffect(() => {
     const allBooks = booksData.flatMap((section) => section.books);
     const found = allBooks.find((b) => b.id === Number(id));
     setBook(found || null);
   }, [id]);
 
-  // fetch comments + ratings
+  // --- Sync added state with library + localStorage
+  useEffect(() => {
+    if (!book) return;
+    const saved = JSON.parse(localStorage.getItem("addedBooks")) || [];
+    const inLibrary =
+      saved.includes(book.id) || library.some((item) => item.id === book.id);
+
+    if (inLibrary) {
+      setAdded(true);
+      if (!saved.includes(book.id)) {
+        saved.push(book.id);
+        localStorage.setItem("addedBooks", JSON.stringify(saved));
+      }
+    } else {
+      setAdded(false);
+      const updated = saved.filter((bid) => bid !== book.id);
+      localStorage.setItem("addedBooks", JSON.stringify(updated));
+    }
+  }, [book, library]);
+
+  // --- Fetch comments + ratings
   useEffect(() => {
     if (!book) return;
     const fetchData = async () => {
@@ -37,6 +58,7 @@ const BookDetails = () => {
           api.get(`/books/${id}/comments`),
           api.get(`/books/${id}/ratings`),
         ]);
+
         if (c.status === "fulfilled") setComments(c.value.data || []);
         if (r.status === "fulfilled") {
           setAvgRating(r.value.data.avg ?? book.rating);
@@ -51,27 +73,18 @@ const BookDetails = () => {
     fetchData();
   }, [book, id]);
 
-  if (!book) {
-    return (
-      <div className="text-center py-20 text-gray-600 dark:text-gray-400">
-        <p>Book not found.</p>
-        <button
-          onClick={() => navigate(-1)}
-          className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-        >
-          Go Back
-        </button>
-      </div>
-    );
-  }
-
-  const isAdded = library.some((item) => item.id === book.id);
-
-  // -------------------------
-  // Add to Library
-  // -------------------------
+  // --- Add to Library
   const handleAddToLibrary = async () => {
     if (!userId) return navigate("/login");
+    if (added) return;
+
+    setAdded(true);
+    const saved = JSON.parse(localStorage.getItem("addedBooks")) || [];
+    if (!saved.includes(book.id)) {
+      saved.push(book.id);
+      localStorage.setItem("addedBooks", JSON.stringify(saved));
+    }
+
     try {
       await api.post("/library", { bookId: id });
       addToLibrary({ id: book.id, title: book.title, img: book.img });
@@ -80,9 +93,24 @@ const BookDetails = () => {
     }
   };
 
-  // -------------------------
-  // Ratings
-  // -------------------------
+  // --- Remove from Library
+  const handleRemoveFromLibrary = async () => {
+    if (!userId) return navigate("/login");
+
+    setAdded(false);
+    const saved = JSON.parse(localStorage.getItem("addedBooks")) || [];
+    const updated = saved.filter((bid) => bid !== book.id);
+    localStorage.setItem("addedBooks", JSON.stringify(updated));
+
+    try {
+      await api.delete(`/library/${book.id}`);
+      removeFromLibrary(book.id);
+    } catch {
+      removeFromLibrary(book.id);
+    }
+  };
+
+  // --- Ratings
   const handleRate = async (val) => {
     if (!userId) return navigate("/login");
     setRating(val);
@@ -94,9 +122,7 @@ const BookDetails = () => {
     }
   };
 
-  // -------------------------
-  // Comments
-  // -------------------------
+  // --- Comments
   const handlePostComment = async () => {
     if (!userId) return navigate("/login");
     if (!commentText.trim()) return;
@@ -112,7 +138,9 @@ const BookDetails = () => {
     setCommentText("");
 
     try {
-      const res = await api.post(`/books/${id}/comments`, { text: tempComment.text });
+      const res = await api.post(`/books/${id}/comments`, {
+        text: tempComment.text,
+      });
       if (res?.data) {
         setComments((prev) =>
           prev.map((c) => (c._id === tempComment._id ? res.data : c))
@@ -122,6 +150,21 @@ const BookDetails = () => {
       console.error("Failed to post comment:", err);
     }
   };
+
+  // --- Render
+  if (!book) {
+    return (
+      <div className="text-center py-20 text-gray-600 dark:text-gray-400">
+        <p>Book not found.</p>
+        <button
+          onClick={() => navigate(-1)}
+          className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+        >
+          Go Back
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black text-gray-900 dark:text-gray-100 py-10 px-6 md:px-20">
@@ -152,9 +195,14 @@ const BookDetails = () => {
         >
           <h1 className="text-4xl font-bold mb-3">{book.title}</h1>
           <p className="text-lg text-gray-500 dark:text-gray-400 mb-1">
-            by <span className="text-gray-800 dark:text-gray-200">{book.author}</span>
+            by{" "}
+            <span className="text-gray-800 dark:text-gray-200">
+              {book.author}
+            </span>
           </p>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{book.genre}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+            {book.genre}
+          </p>
 
           {/* --- Ratings --- */}
           <div className="flex items-center gap-1 mb-5">
@@ -182,18 +230,23 @@ const BookDetails = () => {
               Read Online
             </button>
 
-            <button
-              onClick={handleAddToLibrary}
-              disabled={isAdded}
-              className={`flex items-center gap-2 px-6 py-2 rounded-lg transition-all duration-300 ${
-                isAdded
-                  ? "bg-green-600 text-white cursor-default"
-                  : "bg-gray-800 text-white hover:bg-gray-700"
-              }`}
-            >
-              <FaRegBookmark />
-              {isAdded ? "Added to Library ✓" : "Add to Library"}
-            </button>
+            {added ? (
+              <button
+                onClick={handleRemoveFromLibrary}
+                className="flex items-center gap-2 px-6 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white transition-all duration-300"
+              >
+                <FaRegBookmark />
+                Remove from Library
+              </button>
+            ) : (
+              <button
+                onClick={handleAddToLibrary}
+                className="flex items-center gap-2 px-6 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-white transition-all duration-300"
+              >
+                <FaRegBookmark />
+                Add to Library
+              </button>
+            )}
           </div>
 
           {/* --- Comments --- */}
@@ -221,7 +274,10 @@ const BookDetails = () => {
               </div>
             ) : (
               <p className="text-sm text-gray-400 mb-4">
-                <a href="/login" className="text-indigo-400">Log in</a> to rate or comment.
+                <a href="/login" className="text-indigo-400">
+                  Log in
+                </a>{" "}
+                to rate or comment.
               </p>
             )}
 
