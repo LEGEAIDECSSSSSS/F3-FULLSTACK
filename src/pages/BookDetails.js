@@ -24,17 +24,17 @@ const BookDetails = () => {
 
   // --- Find book locally
   useEffect(() => {
-    const allBooks = booksData.flatMap((section) => section.books);
-    const found = allBooks.find((b) => b.id === Number(id));
+    const allBooks = booksData.flatMap((section) => section.books || []);
+    const found = allBooks.find((b) => String(b.id) === String(id));
     setBook(found || null);
   }, [id]);
 
   // --- Sync added state with library + localStorage
   useEffect(() => {
     if (!book) return;
-    const saved = JSON.parse(localStorage.getItem("addedBooks")) || [];
+    const saved = JSON.parse(localStorage.getItem("addedBooks") || "[]");
     const inLibrary =
-      saved.includes(book.id) || library.some((item) => item.id === book.id);
+      saved.includes(book.id) || library.some((item) => String(item.id) === String(book.id));
 
     if (inLibrary) {
       setAdded(true);
@@ -59,15 +59,15 @@ const BookDetails = () => {
           api.get(`/books/${id}/ratings`),
         ]);
 
-        if (c.status === "fulfilled") setComments(c.value.data || []);
+        if (c.status === "fulfilled") setComments(c.value?.data || []);
         if (r.status === "fulfilled") {
-          setAvgRating(r.value.data.avg ?? book.rating);
-          setRating(r.value.data.userRating ?? 0);
+          setAvgRating(r.value?.data?.avg ?? book.rating ?? 0);
+          setRating(r.value?.data?.userRating ?? 0);
         } else {
-          setAvgRating(book.rating);
+          setAvgRating(book.rating ?? 0);
         }
       } catch {
-        setAvgRating(book.rating);
+        setAvgRating(book.rating ?? 0);
       }
     };
     fetchData();
@@ -76,17 +76,17 @@ const BookDetails = () => {
   // --- Add to Library
   const handleAddToLibrary = async () => {
     if (!userId) return navigate("/login");
-    if (added) return;
+    if (!book || added) return;
 
     setAdded(true);
-    const saved = JSON.parse(localStorage.getItem("addedBooks")) || [];
+    const saved = JSON.parse(localStorage.getItem("addedBooks") || "[]");
     if (!saved.includes(book.id)) {
       saved.push(book.id);
       localStorage.setItem("addedBooks", JSON.stringify(saved));
     }
 
     try {
-      await api.post("/library", { bookId: id });
+      await api.post("/library/add", { book });
       addToLibrary({ id: book.id, title: book.title, img: book.img });
     } catch {
       addToLibrary({ id: book.id, title: book.title, img: book.img });
@@ -95,15 +95,15 @@ const BookDetails = () => {
 
   // --- Remove from Library
   const handleRemoveFromLibrary = async () => {
-    if (!userId) return navigate("/login");
+    if (!userId || !book) return navigate("/login");
 
     setAdded(false);
-    const saved = JSON.parse(localStorage.getItem("addedBooks")) || [];
+    const saved = JSON.parse(localStorage.getItem("addedBooks") || "[]");
     const updated = saved.filter((bid) => bid !== book.id);
     localStorage.setItem("addedBooks", JSON.stringify(updated));
 
     try {
-      await api.delete(`/library/${book.id}`);
+      await api.delete(`/library/remove/${book.id}`);
       removeFromLibrary(book.id);
     } catch {
       removeFromLibrary(book.id);
@@ -124,12 +124,11 @@ const BookDetails = () => {
 
   // --- Comments
   const handlePostComment = async () => {
-    if (!userId) return navigate("/login");
-    if (!commentText.trim()) return;
+    if (!userId || !commentText.trim()) return;
 
     const tempComment = {
       _id: `temp-${Date.now()}`,
-      author: user.username || "You",
+      author: user?.username || "You",
       text: commentText,
       createdAt: new Date().toISOString(),
     };
@@ -138,9 +137,7 @@ const BookDetails = () => {
     setCommentText("");
 
     try {
-      const res = await api.post(`/books/${id}/comments`, {
-        text: tempComment.text,
-      });
+      const res = await api.post(`/books/${id}/comments`, { text: tempComment.text });
       if (res?.data) {
         setComments((prev) =>
           prev.map((c) => (c._id === tempComment._id ? res.data : c))
@@ -151,15 +148,14 @@ const BookDetails = () => {
     }
   };
 
-  // --- Render
- if (!book) {
-  return (
-    <div className="text-center py-20 text-gray-600 dark:text-gray-400">
-      <p>Loading book details...</p>
-    </div>
-  );
-}
-
+  // --- Loading / fallback
+  if (!book) {
+    return (
+      <div className="text-center py-20 text-gray-600 dark:text-gray-400">
+        <p>Loading book details...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black text-gray-900 dark:text-gray-100 py-10 px-6 md:px-20">
@@ -174,8 +170,8 @@ const BookDetails = () => {
       <div className="grid md:grid-cols-2 gap-10 items-center">
         {/* --- Book Cover --- */}
         <motion.img
-          src={book.img}
-          alt={book.title}
+          src={book.img || "/placeholder-book.png"}
+          alt={book?.title || "Book cover"}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -188,16 +184,11 @@ const BookDetails = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.2 }}
         >
-          <h1 className="text-4xl font-bold mb-3">{book.title}</h1>
+          <h1 className="text-4xl font-bold mb-3">{book?.title || "Untitled"}</h1>
           <p className="text-lg text-gray-500 dark:text-gray-400 mb-1">
-            by{" "}
-            <span className="text-gray-800 dark:text-gray-200">
-              {book.author}
-            </span>
+            by <span className="text-gray-800 dark:text-gray-200">{book?.author || "Unknown"}</span>
           </p>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
-            {book.genre}
-          </p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{book?.genre || "Unknown"}</p>
 
           {/* --- Ratings --- */}
           <div className="flex items-center gap-1 mb-5">
@@ -205,9 +196,7 @@ const BookDetails = () => {
               <FaStar
                 key={i}
                 onClick={() => handleRate(i + 1)}
-                className={`cursor-pointer ${
-                  i < rating ? "text-yellow-400" : "text-gray-400"
-                }`}
+                className={`cursor-pointer ${i < rating ? "text-yellow-400" : "text-gray-400"}`}
               />
             ))}
             <span className="ml-2 text-gray-500 dark:text-gray-400">
@@ -216,7 +205,7 @@ const BookDetails = () => {
           </div>
 
           <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
-            {book.synopsis}
+            {book?.synopsis || "No synopsis available."}
           </p>
 
           {/* --- Action Buttons --- */}
@@ -230,16 +219,14 @@ const BookDetails = () => {
                 onClick={handleRemoveFromLibrary}
                 className="flex items-center gap-2 px-6 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white transition-all duration-300"
               >
-                <FaRegBookmark />
-                Remove from Library
+                <FaRegBookmark /> Remove from Library
               </button>
             ) : (
               <button
                 onClick={handleAddToLibrary}
                 className="flex items-center gap-2 px-6 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-white transition-all duration-300"
               >
-                <FaRegBookmark />
-                Add to Library
+                <FaRegBookmark /> Add to Library
               </button>
             )}
           </div>
@@ -282,12 +269,10 @@ const BookDetails = () => {
               <div className="space-y-4">
                 {comments.map((c) => (
                   <div key={c._id} className="p-3 bg-gray-800 rounded-lg">
-                    <p className="text-sm text-indigo-300 font-semibold">
-                      {c.author}
-                    </p>
-                    <p className="text-gray-300 mt-1">{c.text}</p>
+                    <p className="text-sm text-indigo-300 font-semibold">{c.author || "Anonymous"}</p>
+                    <p className="text-gray-300 mt-1">{c.text || ""}</p>
                     <p className="text-xs text-gray-500 mt-1">
-                      {new Date(c.createdAt).toLocaleString()}
+                      {c.createdAt ? new Date(c.createdAt).toLocaleString() : ""}
                     </p>
                   </div>
                 ))}
