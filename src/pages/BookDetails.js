@@ -1,18 +1,55 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import booksData from "../data/booksData"; // adjust this path if your data file is elsewhere
+import booksData from "../data/booksData";
 import { FaStar, FaArrowLeft, FaRegBookmark, FaComments } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { useLibrary } from "../context/LibraryContext";
+import { useAuth } from "../context/AuthContext"; // your auth hook
+import api from "../api/axios";
 
 const BookDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToLibrary, library } = useLibrary();
+  const { user } = useAuth() || {};
 
-  // Find the selected book
-  const allBooks = booksData.flatMap((section) => section.books);
-  const book = allBooks.find((b) => b.id === Number(id));
+  const [book, setBook] = useState(null);
+  const [rating, setRating] = useState(0);
+  const [avgRating, setAvgRating] = useState(null);
+  const [comments, setComments] = useState([]);
+  const [commentText, setCommentText] = useState("");
+
+  const userId = user?._id || user?.id;
+
+  // find local book as fallback
+  useEffect(() => {
+    const allBooks = booksData.flatMap((section) => section.books);
+    const found = allBooks.find((b) => b.id === Number(id));
+    setBook(found || null);
+  }, [id]);
+
+  // fetch comments + ratings
+  useEffect(() => {
+    if (!book) return;
+    const fetchData = async () => {
+      try {
+        const [c, r] = await Promise.allSettled([
+          api.get(`/books/${id}/comments`),
+          api.get(`/books/${id}/ratings`),
+        ]);
+        if (c.status === "fulfilled") setComments(c.value.data || []);
+        if (r.status === "fulfilled") {
+          setAvgRating(r.value.data.avg ?? book.rating);
+          setRating(r.value.data.userRating ?? 0);
+        } else {
+          setAvgRating(book.rating);
+        }
+      } catch {
+        setAvgRating(book.rating);
+      }
+    };
+    fetchData();
+  }, [book, id]);
 
   if (!book) {
     return (
@@ -29,6 +66,62 @@ const BookDetails = () => {
   }
 
   const isAdded = library.some((item) => item.id === book.id);
+
+  // -------------------------
+  // Add to Library
+  // -------------------------
+  const handleAddToLibrary = async () => {
+    if (!userId) return navigate("/login");
+    try {
+      await api.post("/library", { bookId: id });
+      addToLibrary({ id: book.id, title: book.title, img: book.img });
+    } catch {
+      addToLibrary({ id: book.id, title: book.title, img: book.img });
+    }
+  };
+
+  // -------------------------
+  // Ratings
+  // -------------------------
+  const handleRate = async (val) => {
+    if (!userId) return navigate("/login");
+    setRating(val);
+    try {
+      const res = await api.post(`/books/${id}/rate`, { rating: val });
+      if (res?.data?.avg) setAvgRating(res.data.avg);
+    } catch (err) {
+      console.error("Rating failed:", err);
+    }
+  };
+
+  // -------------------------
+  // Comments
+  // -------------------------
+  const handlePostComment = async () => {
+    if (!userId) return navigate("/login");
+    if (!commentText.trim()) return;
+
+    const tempComment = {
+      _id: `temp-${Date.now()}`,
+      author: user.username || "You",
+      text: commentText,
+      createdAt: new Date().toISOString(),
+    };
+
+    setComments((prev) => [tempComment, ...prev]);
+    setCommentText("");
+
+    try {
+      const res = await api.post(`/books/${id}/comments`, { text: tempComment.text });
+      if (res?.data) {
+        setComments((prev) =>
+          prev.map((c) => (c._id === tempComment._id ? res.data : c))
+        );
+      }
+    } catch (err) {
+      console.error("Failed to post comment:", err);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black text-gray-900 dark:text-gray-100 py-10 px-6 md:px-20">
@@ -61,19 +154,21 @@ const BookDetails = () => {
           <p className="text-lg text-gray-500 dark:text-gray-400 mb-1">
             by <span className="text-gray-800 dark:text-gray-200">{book.author}</span>
           </p>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
-            {book.genre}
-          </p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{book.genre}</p>
 
+          {/* --- Ratings --- */}
           <div className="flex items-center gap-1 mb-5">
             {[...Array(5)].map((_, i) => (
               <FaStar
                 key={i}
-                className={i < Math.floor(book.rating) ? "text-yellow-400" : "text-gray-400"}
+                onClick={() => handleRate(i + 1)}
+                className={`cursor-pointer ${
+                  i < rating ? "text-yellow-400" : "text-gray-400"
+                }`}
               />
             ))}
             <span className="ml-2 text-gray-500 dark:text-gray-400">
-              {book.rating.toFixed(1)} / 5
+              {avgRating ? avgRating.toFixed(1) : "—"} / 5
             </span>
           </div>
 
@@ -88,9 +183,7 @@ const BookDetails = () => {
             </button>
 
             <button
-              onClick={() =>
-                !isAdded && addToLibrary({ id: book.id, title: book.title, img: book.img })
-              }
+              onClick={handleAddToLibrary}
               disabled={isAdded}
               className={`flex items-center gap-2 px-6 py-2 rounded-lg transition-all duration-300 ${
                 isAdded
@@ -103,15 +196,52 @@ const BookDetails = () => {
             </button>
           </div>
 
-          {/* --- Comments & Ratings Placeholder --- */}
+          {/* --- Comments --- */}
           <div className="mt-10 p-6 rounded-2xl bg-gray-100 dark:bg-gray-900 shadow-inner">
             <div className="flex items-center gap-2 mb-4 text-indigo-600">
               <FaComments />
               <h2 className="text-xl font-semibold">Comments</h2>
             </div>
-            <p className="text-gray-600 dark:text-gray-400 text-sm italic">
-              Comment section coming soon...
-            </p>
+
+            {userId ? (
+              <div className="mb-4">
+                <textarea
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  rows={3}
+                  className="w-full p-3 rounded bg-gray-800 text-gray-100"
+                  placeholder="Write a comment..."
+                />
+                <button
+                  onClick={handlePostComment}
+                  className="mt-2 bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded text-white"
+                >
+                  Post Comment
+                </button>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-400 mb-4">
+                <a href="/login" className="text-indigo-400">Log in</a> to rate or comment.
+              </p>
+            )}
+
+            {comments.length === 0 ? (
+              <p className="text-gray-500 italic">No comments yet.</p>
+            ) : (
+              <div className="space-y-4">
+                {comments.map((c) => (
+                  <div key={c._id} className="p-3 bg-gray-800 rounded-lg">
+                    <p className="text-sm text-indigo-300 font-semibold">
+                      {c.author}
+                    </p>
+                    <p className="text-gray-300 mt-1">{c.text}</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {new Date(c.createdAt).toLocaleString()}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </motion.div>
       </div>
