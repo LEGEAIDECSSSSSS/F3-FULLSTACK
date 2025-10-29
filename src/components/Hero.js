@@ -2,15 +2,21 @@
 import React from "react";
 import { motion } from "framer-motion";
 import bg_light from "../Images/bg_light.png";
+import bg_dark from "../Images/bg_dark.jpg";
 
 const Hero = () => {
   return (
-    <section className="relative w-full h-[85vh] flex items-center justify-center bg-gradient-to-b from-emerald-900/80 to-black/90 dark:from-gray-900 dark:to-black overflow-hidden">
-      {/* Background image */}
+    <section className="relative w-full h-[80vh] flex items-center justify-center bg-gradient-to-b from-emerald-900/80 to-black/90 dark:from-gray-900 dark:to-black overflow-hidden">
+      {/* Background images (one for light, one for dark mode) */}
       <img
         src={bg_light}
-        alt="Books Background"
-        className="absolute inset-0 w-full h-full object-cover opacity-40"
+        alt="Books Background Light"
+        className="absolute inset-0 w-full h-full object-cover opacity-40 dark:hidden"
+      />
+      <img
+        src={bg_dark}
+        alt="Books Background Dark"
+        className="absolute inset-0 w-full h-full object-cover opacity-40 hidden dark:block"
       />
 
       {/* Content */}
@@ -20,8 +26,8 @@ const Hero = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           className="text-5xl md:text-6xl font-extrabold text-white drop-shadow-lg"
-        >Let us take you to a world only we have the map to.
-          
+        >
+          Let us take you to a world only we have the map to.
         </motion.h1>
 
         <motion.p
