@@ -10,21 +10,21 @@ export const LibraryProvider = ({ children }) => {
   const API_BASE_URL =
     process.env.REACT_APP_API_URL || "http://localhost:5000";
 
-  // ✅ Improved Helper: Normalize image URL
+  // ✅ Helper: Normalize image URLs safely (for both frontend & backend sources)
   const resolveImgUrl = (img) => {
-    if (!img) return "/default-cover.jpg";
+    if (!img) return "/images/default-cover.jpg";
 
-    // ✅ Case 1: Imported or locally served image (React static files)
-    if (img.startsWith("/") || img.includes("static/")) return img;
+    // Already a full URL (e.g. http://localhost:3000/images/bg_dark.jpg or external link)
+    if (/^https?:\/\//i.test(img)) return img;
 
-    // ✅ Case 2: Fully qualified external link
-    if (img.startsWith("http")) return img;
+    // Already points to /images/... → keep as-is
+    if (img.startsWith("/images/")) return img;
 
-    // ✅ Case 3: Backend-served path (e.g., from /uploads)
-    return `${API_BASE_URL}${img.startsWith("/") ? img : `/${img}`}`;
+    // Just a filename → build path from /images/
+    return `/images/${img}`;
   };
 
-  // Fetch user library
+  // ✅ Fetch user library
   useEffect(() => {
     const fetchLibrary = async () => {
       if (!token) {
@@ -61,7 +61,7 @@ export const LibraryProvider = ({ children }) => {
     fetchLibrary();
   }, [token, API_BASE_URL]);
 
-  // Add book
+  // ✅ Add book to library
   const addToLibrary = async (book) => {
     if (!token) {
       alert("Please log in to add books to your library.");
@@ -69,7 +69,7 @@ export const LibraryProvider = ({ children }) => {
     }
 
     try {
-      const fullImgUrl = resolveImgUrl(book.img);
+      const cleanImg = resolveImgUrl(book.img);
 
       const res = await fetch(`${API_BASE_URL}/api/library/add`, {
         method: "POST",
@@ -78,7 +78,7 @@ export const LibraryProvider = ({ children }) => {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          book: { ...book, img: fullImgUrl },
+          book: { ...book, img: cleanImg },
         }),
       });
 
@@ -97,7 +97,7 @@ export const LibraryProvider = ({ children }) => {
     }
   };
 
-  // Remove book
+  // ✅ Remove book from library
   const removeFromLibrary = async (id) => {
     if (!token) {
       alert("Please log in to remove books.");

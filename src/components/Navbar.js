@@ -61,7 +61,7 @@ export default function Navbar() {
     <>
       {/* NAVBAR */}
       <nav
-        className="fixed top-0 left-0 w-full z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-200 dark:border-gray-700 transition-all duration-300"
+        className="fixed top-0 left-0 w-full z-50 bg-white/90 dark:bg-black backdrop-blur border-b border-gray-200 dark:border-gray-700 transition-all duration-300"
         aria-label="Main navigation"
       >
         <div className="flex items-center justify-between w-full px-4 sm:px-6 lg:px-10 xl:px-16 2xl:px-24 py-3">
@@ -204,7 +204,7 @@ export default function Navbar() {
       <div
         className={`fixed top-0 right-0 h-full w-[75%] sm:w-[60%] md:hidden z-50 transform transition-transform duration-300 ease-in-out
                     ${menuOpen ? "translate-x-0" : "translate-x-full"}
-                    ${darkMode ? "bg-gray-900 bg-opacity-100" : "bg-white bg-opacity-100"} shadow-2xl border-l ${
+                    ${darkMode ? "bg-black bg-opacity-100" : "bg-white bg-opacity-100"} shadow-2xl border-l ${
           darkMode ? "border-gray-700" : "border-gray-200"
         }`}
         role="dialog"

@@ -42,9 +42,6 @@ body {
 }
 
 /* ---------------- MAIN CONTENT ---------------- */
-.app {
-  padding-bottom: 40px;
-}
 
 .content {
   padding: 20px 40px;
@@ -160,3 +157,6 @@ body {
 .animate-fadeIn {
   animation: fadeIn 0.3s ease-out;
 }
+
+
+

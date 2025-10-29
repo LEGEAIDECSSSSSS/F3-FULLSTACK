@@ -14,24 +14,33 @@ const fadeUp = {
 const BookSection = ({ title, books }) => {
   const { library, addToLibrary } = useLibrary();
 
-  // ✅ Improved Helper to handle local, backend, and external images properly
+  // ✅ Define default image globally so we can use it anywhere
+  const defaultImg = process.env.PUBLIC_URL + "/images/default-cover.jpg";
+
+  // ✅ Normalize image URLs for correct frontend rendering
   const resolveImgUrl = (img) => {
-    if (!img) return "/default-cover.jpg";
+    if (!img) return defaultImg;
 
-    // Case 1: If it's a local import or static path (like /Images/bg_dark.jpg)
-    if (img.startsWith("/") || img.includes("static/")) return img;
-
-    // Case 2: External hosted image
+    // Full external URL
     if (img.startsWith("http")) return img;
 
-    // Case 3: Backend-served (e.g. /uploads/image.jpg)
-    const apiBase =
-      process.env.REACT_APP_API_URL || "http://localhost:5000";
+    // Local public folder (/public/images)
+    if (img.startsWith("/images/")) {
+      return process.env.PUBLIC_URL + img;
+    }
+
+    // React static build (e.g. /static/media/...)
+    if (img.includes("/static/")) {
+      return process.env.PUBLIC_URL + img;
+    }
+
+    // Backend-served (e.g. /uploads/cover.jpg)
+    const apiBase = process.env.REACT_APP_API_URL || "http://localhost:5000";
     return `${apiBase}${img.startsWith("/") ? img : `/${img}`}`;
   };
 
   return (
-    <section className="py-16 px-6 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <section className="py-16 px-6 bg-gray-50 dark:bg-black transition-colors duration-300">
       <div className="w-full px-6 lg:px-12">
         {/* Section title */}
         <motion.h2
@@ -84,6 +93,7 @@ const BookSection = ({ title, books }) => {
                 <img
                   src={imgSrc}
                   alt={book.title}
+                  onError={(e) => (e.target.src = defaultImg)} // fixed reference
                   className="
                     w-full
                     h-auto
@@ -139,7 +149,7 @@ const BookSection = ({ title, books }) => {
                         }
                       }}
                       disabled={isAdded}
-                      className={`
+                      className={` 
                         px-2 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-sm
                         rounded-lg whitespace-nowrap transition-all duration-300
                         ${

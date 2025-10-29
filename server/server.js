@@ -24,6 +24,10 @@ const app = express();
 // ✅ Middlewares
 app.use(express.json());
 
+// ✅ Serve static image files
+app.use("/images", express.static(path.join(__dirname, "images")));
+
+
 // ✅ Configure CORS
 const allowedOrigins = [
   "http://localhost:5173",

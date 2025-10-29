@@ -30,7 +30,7 @@ const fadeUp = {
 
 const FeaturedComics = () => {
   return (
-    <section className="py-20 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <section className="py-20 bg-gray-50 dark:bg-black transition-colors duration-300">
       <div className="max-w-6xl mx-auto px-6 text-center">
         {/* Section title */}
         <motion.h2
