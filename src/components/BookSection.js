@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { useLibrary } from "../context/LibraryContext";
+import { useNavigate } from "react-router-dom";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 40 },
@@ -13,28 +14,16 @@ const fadeUp = {
 
 const BookSection = ({ title, books }) => {
   const { library, addToLibrary } = useLibrary();
+  const navigate = useNavigate();
 
-  // ✅ Define default image globally so we can use it anywhere
   const defaultImg = process.env.PUBLIC_URL + "/images/default-cover.jpg";
 
-  // ✅ Normalize image URLs for correct frontend rendering
   const resolveImgUrl = (img) => {
     if (!img) return defaultImg;
-
-    // Full external URL
     if (img.startsWith("http")) return img;
+    if (img.startsWith("/images/")) return process.env.PUBLIC_URL + img;
+    if (img.includes("/static/")) return process.env.PUBLIC_URL + img;
 
-    // Local public folder (/public/images)
-    if (img.startsWith("/images/")) {
-      return process.env.PUBLIC_URL + img;
-    }
-
-    // React static build (e.g. /static/media/...)
-    if (img.includes("/static/")) {
-      return process.env.PUBLIC_URL + img;
-    }
-
-    // Backend-served (e.g. /uploads/cover.jpg)
     const apiBase = process.env.REACT_APP_API_URL || "http://localhost:5000";
     return `${apiBase}${img.startsWith("/") ? img : `/${img}`}`;
   };
@@ -76,7 +65,7 @@ const BookSection = ({ title, books }) => {
             return (
               <motion.div
                 key={index}
-                className="relative group overflow-hidden rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 bg-transparent"
+                className="relative group overflow-hidden rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 bg-transparent cursor-pointer"
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true, amount: 0.2 }}
@@ -89,11 +78,11 @@ const BookSection = ({ title, books }) => {
                   },
                 }}
               >
-                {/* ✅ Book Image */}
+                {/* Book Image */}
                 <img
                   src={imgSrc}
                   alt={book.title}
-                  onError={(e) => (e.target.src = defaultImg)} // fixed reference
+                  onError={(e) => (e.target.src = defaultImg)}
                   className="
                     w-full
                     h-auto
@@ -127,6 +116,7 @@ const BookSection = ({ title, books }) => {
                     "
                   >
                     <button
+                      onClick={() => navigate(`/book/${book.id || book._id}`)}
                       className="
                         px-2 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-sm
                         bg-indigo-600 text-white rounded-lg
@@ -137,14 +127,14 @@ const BookSection = ({ title, books }) => {
                       Read Online
                     </button>
 
-                    {/* ✅ Add to Library Button */}
+                    {/* Add to Library */}
                     <button
                       onClick={() => {
                         if (!isAdded) {
                           addToLibrary({
                             id: book.id,
                             title: book.title,
-                            img: imgSrc, // normalized image
+                            img: imgSrc,
                           });
                         }
                       }}

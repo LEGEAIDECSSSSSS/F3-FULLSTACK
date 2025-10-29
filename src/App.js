@@ -12,8 +12,10 @@ import BookSection from "./components/BookSection";
 import FeaturedComics from "./components/FeaturedComics";
 import Newsletter from "./components/Newsletter";
 import Explore from "./components/Explore";
+import AboutPage from "./pages/AboutPage";
 import Footer from "./components/Footer";
 import LibraryPage from "./pages/LibraryPage";
+import BookDetails from "./pages/BookDetails";
 import { LibraryProvider, useLibrary } from "./context/LibraryContext";
 
 const categories = [
@@ -121,6 +123,8 @@ function AppContent({ darkMode, toggleDarkMode }) {
             </ProtectedRoute>
           }
         />
+        <Route path="/book/:id" element={<BookDetails />} />
+        <Route path="/about" element={<AboutPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
       </Routes>
