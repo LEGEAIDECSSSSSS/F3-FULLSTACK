@@ -1,23 +1,72 @@
-import React from "react";
+// src/pages/BookDetails.jsx
+import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import booksData from "../data/booksData"; // adjust this path if your data file is elsewhere
 import { FaStar, FaArrowLeft, FaRegBookmark, FaComments } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { useLibrary } from "../context/LibraryContext";
+import { useAuth } from "../context/AuthContext";
+import { io as ioClient } from "socket.io-client";
+import booksData from "../data/booksData"; // ✅ added import for local data
 
 const BookDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToLibrary, library } = useLibrary();
+  const { user } = useAuth();
 
-  // Find the selected book
-  const allBooks = booksData.flatMap((section) => section.books);
-  const book = allBooks.find((b) => b.id === Number(id));
+  const [book, setBook] = useState(null);
+  const [commentText, setCommentText] = useState("");
+  const [submittingComment, setSubmittingComment] = useState(false);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [userRated, setUserRated] = useState(false);
+  const socketRef = useRef(null);
+
+  const isAdded = book && library.some((item) => item.id === book.id);
+
+  // ✅ Load book locally from booksData.js
+  useEffect(() => {
+    let mounted = true;
+
+    const findBookLocally = () => {
+      const allBooks = booksData.flatMap((section) => section.books);
+      const found = allBooks.find((b) => String(b.id) === String(id));
+      if (mounted) setBook(found || null);
+    };
+
+    findBookLocally();
+    return () => {
+      mounted = false;
+    };
+  }, [id]);
+
+  // (Optional) Socket connection left in place for later real-time use
+  useEffect(() => {
+    socketRef.current = ioClient(undefined, {
+      path: "/socket.io",
+      transports: ["websocket", "polling"],
+    });
+
+    const socket = socketRef.current;
+    socket.on("connect", () => console.log("Socket connected:", socket.id));
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [id]);
+
+  // Comment and rating actions temporarily disabled until backend added
+  const postComment = async () => {
+    alert("Comments are disabled in offline mode (no backend).");
+  };
+
+  const submitRating = async () => {
+    alert("Ratings are disabled in offline mode (no backend).");
+  };
 
   if (!book) {
     return (
       <div className="text-center py-20 text-gray-600 dark:text-gray-400">
-        <p>Book not found.</p>
+        <p>Looking for book...</p>
         <button
           onClick={() => navigate(-1)}
           className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
@@ -27,8 +76,6 @@ const BookDetails = () => {
       </div>
     );
   }
-
-  const isAdded = library.some((item) => item.id === book.id);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black text-gray-900 dark:text-gray-100 py-10 px-6 md:px-20">
@@ -40,8 +87,7 @@ const BookDetails = () => {
         <FaArrowLeft /> Back
       </motion.button>
 
-      <div className="grid md:grid-cols-2 gap-10 items-center">
-        {/* --- Book Cover --- */}
+      <div className="grid md:grid-cols-2 gap-10 items-start">
         <motion.img
           src={book.img}
           alt={book.title}
@@ -51,7 +97,6 @@ const BookDetails = () => {
           className="rounded-2xl shadow-lg w-full h-auto object-cover"
         />
 
-        {/* --- Book Info --- */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -66,14 +111,18 @@ const BookDetails = () => {
           </p>
 
           <div className="flex items-center gap-1 mb-5">
-            {[...Array(5)].map((_, i) => (
-              <FaStar
-                key={i}
-                className={i < Math.floor(book.rating) ? "text-yellow-400" : "text-gray-400"}
-              />
-            ))}
+            {[...Array(5)].map((_, i) => {
+              const starIndex = i + 1;
+              const filled = starIndex <= Math.round(book.rating || 0);
+              return (
+                <FaStar
+                  key={i}
+                  className={filled ? "text-yellow-400" : "text-gray-400"}
+                />
+              );
+            })}
             <span className="ml-2 text-gray-500 dark:text-gray-400">
-              {book.rating.toFixed(1)} / 5
+              {(book.rating || 0).toFixed(1)} / 5
             </span>
           </div>
 
@@ -81,15 +130,15 @@ const BookDetails = () => {
             {book.synopsis}
           </p>
 
-          {/* --- Action Buttons --- */}
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap gap-4 mb-6">
             <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg transition-all duration-300">
               Read Online
             </button>
 
             <button
               onClick={() =>
-                !isAdded && addToLibrary({ id: book.id, title: book.title, img: book.img })
+                !isAdded &&
+                addToLibrary({ id: book.id, title: book.title, img: book.img })
               }
               disabled={isAdded}
               className={`flex items-center gap-2 px-6 py-2 rounded-lg transition-all duration-300 ${
@@ -103,14 +152,38 @@ const BookDetails = () => {
             </button>
           </div>
 
-          {/* --- Comments & Ratings Placeholder --- */}
-          <div className="mt-10 p-6 rounded-2xl bg-gray-100 dark:bg-gray-900 shadow-inner">
+          <div className="mb-8 p-4 rounded-lg bg-gray-100 dark:bg-gray-900">
+            <h3 className="font-semibold mb-2">Rate this book</h3>
+            <div className="flex items-center gap-2">
+              {[1, 2, 3, 4, 5].map((n) => {
+                const active = n <= (hoverRating || Math.round(book.rating || 0));
+                return (
+                  <FaStar
+                    key={n}
+                    onMouseEnter={() => setHoverRating(n)}
+                    onMouseLeave={() => setHoverRating(0)}
+                    onClick={() => submitRating(n)}
+                    className={`cursor-pointer ${
+                      active ? "text-yellow-400" : "text-gray-400"
+                    }`}
+                    size={22}
+                  />
+                );
+              })}
+              <span className="ml-3 text-sm text-gray-500 dark:text-gray-400">
+                {userRated ? "Thanks for rating!" : "Click a star to rate"}
+              </span>
+            </div>
+          </div>
+
+          <div className="mt-4 p-6 rounded-2xl bg-gray-100 dark:bg-gray-900 shadow-inner">
             <div className="flex items-center gap-2 mb-4 text-indigo-600">
               <FaComments />
               <h2 className="text-xl font-semibold">Comments</h2>
             </div>
-            <p className="text-gray-600 dark:text-gray-400 text-sm italic">
-              Comment section coming soon...
+
+            <p className="text-gray-600 dark:text-gray-400 italic">
+              Comments are disabled in offline mode.
             </p>
           </div>
         </motion.div>
