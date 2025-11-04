@@ -1,3 +1,4 @@
+// src/components/BookSection.jsx
 import React from "react";
 import { motion } from "framer-motion";
 import { useLibrary } from "../context/LibraryContext";
@@ -12,26 +13,23 @@ const fadeUp = {
   },
 };
 
-const BookSection = ({ title, books }) => {
+const BookSection = ({ title, books = [] }) => {
   const { library, addToLibrary } = useLibrary();
   const navigate = useNavigate();
 
   const defaultImg = process.env.PUBLIC_URL + "/images/default-cover.jpg";
+  const apiBase = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
   const resolveImgUrl = (img) => {
     if (!img) return defaultImg;
     if (img.startsWith("http")) return img;
     if (img.startsWith("/images/")) return process.env.PUBLIC_URL + img;
-    if (img.includes("/static/")) return process.env.PUBLIC_URL + img;
-
-    const apiBase = process.env.REACT_APP_API_URL || "http://localhost:5000";
-    return `${apiBase}${img.startsWith("/") ? img : `/${img}`}`;
+    return `${apiBase}${img.startsWith("/") ? "" : "/"}${img}`;
   };
 
   return (
     <section className="py-16 px-6 bg-gray-50 dark:bg-black transition-colors duration-300">
       <div className="w-full px-6 lg:px-12">
-        {/* Section title */}
         <motion.h2
           className="text-3xl font-bold mb-10 text-gray-800 dark:text-gray-100"
           initial="hidden"
@@ -42,7 +40,6 @@ const BookSection = ({ title, books }) => {
           {title}
         </motion.h2>
 
-        {/* Book grid */}
         <div
           className="
             grid gap-4
@@ -53,10 +50,11 @@ const BookSection = ({ title, books }) => {
           "
         >
           {books.map((book, index) => {
+            const realId = book._id || book.id; // ✅ ensures MongoDB ID is used
             const isAdded = library.some(
               (item) =>
-                item.id === book.id ||
-                item._id === book._id ||
+                item._id === realId ||
+                item.id === realId ||
                 item.title === book.title
             );
 
@@ -64,7 +62,7 @@ const BookSection = ({ title, books }) => {
 
             return (
               <motion.div
-                key={index}
+                key={realId || index}
                 className="relative group overflow-hidden rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 bg-transparent cursor-pointer"
                 initial="hidden"
                 whileInView="visible"
@@ -78,51 +76,27 @@ const BookSection = ({ title, books }) => {
                   },
                 }}
               >
-                {/* Book Image */}
                 <img
                   src={imgSrc}
                   alt={book.title}
                   onError={(e) => (e.target.src = defaultImg)}
-                  className="
-                    w-full
-                    h-auto
-                    aspect-[2/3]
-                    object-cover rounded-2xl
-                    group-hover:scale-105
-                    transition-transform duration-500
-                  "
+                  className="w-full h-auto aspect-[2/3] object-cover rounded-2xl group-hover:scale-105 transition-transform duration-500"
                 />
 
-                {/* Overlay */}
                 <div
-                  className="
-                    absolute inset-0
-                    bg-black bg-opacity-0
-                    group-hover:bg-opacity-60
-                    flex flex-col justify-center items-center text-center
-                    transition-all duration-300
-                    p-2 sm:p-3
-                  "
+                  className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 flex flex-col justify-center items-center text-center transition-all duration-300 p-2 sm:p-3"
                 >
                   <h3 className="text-white text-sm sm:text-lg font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     {book.title}
                   </h3>
 
                   <div
-                    className="
-                      mt-2 sm:mt-3 opacity-0 group-hover:opacity-100
-                      transition-opacity duration-300
-                      flex flex-col sm:flex-row justify-center items-center gap-2
-                    "
+                    className="mt-2 sm:mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col sm:flex-row justify-center items-center gap-2"
                   >
+                    {/* ✅ Always use MongoDB _id when available */}
                     <button
-                      onClick={() => navigate(`/book/${book.id || book._id}`)}
-                      className="
-                        px-2 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-sm
-                        bg-indigo-600 text-white rounded-lg
-                        hover:bg-indigo-700
-                        whitespace-nowrap
-                      "
+                      onClick={() => navigate(`/book/${realId}`)}
+                      className="px-2 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 whitespace-nowrap"
                     >
                       Read Online
                     </button>
@@ -132,22 +106,18 @@ const BookSection = ({ title, books }) => {
                       onClick={() => {
                         if (!isAdded) {
                           addToLibrary({
-                            id: book.id,
+                            _id: realId,
                             title: book.title,
                             img: imgSrc,
                           });
                         }
                       }}
                       disabled={isAdded}
-                      className={` 
-                        px-2 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-sm
-                        rounded-lg whitespace-nowrap transition-all duration-300
-                        ${
-                          isAdded
-                            ? "bg-green-600 text-white cursor-default"
-                            : "bg-white text-gray-800 hover:bg-gray-200"
-                        }
-                      `}
+                      className={`px-2 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-sm rounded-lg whitespace-nowrap transition-all duration-300 ${
+                        isAdded
+                          ? "bg-green-600 text-white cursor-default"
+                          : "bg-white text-gray-800 hover:bg-gray-200"
+                      }`}
                     >
                       {isAdded ? "Added ✓" : "Add to Library"}
                     </button>

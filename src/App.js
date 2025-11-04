@@ -1,5 +1,5 @@
 // src/App.js
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
@@ -17,64 +17,72 @@ import Footer from "./components/Footer";
 import LibraryPage from "./pages/LibraryPage";
 import BookDetails from "./pages/BookDetails";
 import { LibraryProvider, useLibrary } from "./context/LibraryContext";
+import axios from "axios";
 
-const categories = [
-  {
-    title: "New Releases",
-    books: [
-      { id: 1, title: "The Silent Heir", img: "/images/bg_dark.jpg", price: 10 },
-      { id: 2, title: "Whispers of Dawn", img: "/images/bg_dark.jpg", price: 12 },
-      { id: 3, title: "Echoes of Time", img: "/images/bg_dark.jpg", price: 14 },
-      { id: 4, title: "Shadowborn", img: "/images/bg_dark.jpg", price: 11 },
-      { id: 5, title: "Moonlight Prophecy", img: "/images/bg_dark.jpg", price: 13 },
-    ],
-  },
-  {
-    title: "Web Novels",
-    books: [
-      { id: 6, title: "Crimson Skies", img: "/images/bg_dark.jpg", price: 15 },
-      { id: 7, title: "The Lost Path", img: "/images/bg_dark.jpg", price: 17 },
-      { id: 8, title: "Rise of the Ember", img: "/images/bg_dark.jpg", price: 20 },
-      { id: 9, title: "Last Voyage", img: "/images/bg_dark.jpg", price: 13 },
-      { id: 10, title: "Frozen Legacy", img: "/images/bg_dark.jpg", price: 18 },
-    ],
-  },
-  {
-    title: "Graphic Novels",
-    books: [
-      { id: 11, title: "Crown of Mist", img: "/images/bg_dark.jpg", price: 14 },
-      { id: 12, title: "Warden of Fire", img: "/images/bg_dark.jpg", price: 16 },
-      { id: 13, title: "The Hidden Realm", img: "/images/bg_dark.jpg", price: 19 },
-      { id: 14, title: "Oathbreaker", img: "/images/bg_dark.jpg", price: 15 },
-      { id: 15, title: "The Last Mage", img: "/images/bg_dark.jpg", price: 18 },
-    ],
-  },
-];
+const API_BASE =
+  process.env.REACT_APP_API_URL?.trim() ||
+  (window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : window.location.origin);
 
 // 🏠 HomePage component
-const HomePage = ({ addToLibrary, darkMode, toggleDarkMode }) => (
-  <div className="flex flex-col min-h-screen">
-    <Navbar toggleDarkMode={toggleDarkMode} darkMode={darkMode} />
+const HomePage = ({ addToLibrary, darkMode, toggleDarkMode }) => {
+  const [booksByGenre, setBooksByGenre] = useState({});
+  const [loading, setLoading] = useState(true);
 
-    {/* Main content expands to fill available space */}
-    <main className="flex-grow">
-      <Hero />
-      {categories.map((category, i) => (
-        <BookSection
-          key={i}
-          title={category.title}
-          books={category.books}
-          addToLibrary={addToLibrary}
-        />
-      ))}
-      <FeaturedComics />
-      <Newsletter />
-      <Explore />
-    </main>
+  useEffect(() => {
+    const fetchBooks = async () => {
+      try {
+        const res = await axios.get(`${API_BASE}/api/books`);
+        const books = res.data;
 
-    <Footer />
-  </div>
-);
+        // Group by genre
+        const grouped = books.reduce((acc, book) => {
+          const genre = book.genre || "Others";
+          if (!acc[genre]) acc[genre] = [];
+          acc[genre].push(book);
+          return acc;
+        }, {});
+        setBooksByGenre(grouped);
+      } catch (error) {
+        console.error("Error fetching books:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBooks();
+  }, []);
+
+  return (
+    <div className="flex flex-col min-h-screen">
+      <Navbar toggleDarkMode={toggleDarkMode} darkMode={darkMode} />
+
+      <main className="flex-grow">
+        <Hero />
+
+        {loading ? (
+          <p className="text-center py-20">Loading books...</p>
+        ) : (
+          Object.keys(booksByGenre).map((genre, i) => (
+            <BookSection
+              key={i}
+              title={genre}
+              books={booksByGenre[genre]}
+              addToLibrary={addToLibrary}
+            />
+          ))
+        )}
+
+        <FeaturedComics />
+        <Newsletter />
+        <Explore />
+      </main>
+
+      <Footer />
+    </div>
+  );
+};
 
 function App() {
   const [darkMode, setDarkMode] = useState(false);
