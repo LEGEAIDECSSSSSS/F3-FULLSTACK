@@ -187,26 +187,6 @@ const submitComment = async (e) => {
                 isAdded ? "bg-green-600 text-white cursor-default" : "bg-gray-800 text-white hover:bg-gray-700"
               }`}
             >
-              <button
-  onClick={async () => {
-    try {
-      const res = await axios.post(
-        `${API_BASE}/api/books/${id}/comments`,
-        { text: "Test comment" },
-        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
-      );
-      console.log(res.data);
-      alert("Comment submitted!");
-    } catch (err) {
-      console.error(err.response?.data || err.message);
-      alert("Error: " + (err.response?.data?.message || err.message));
-    }
-  }}
-  className="bg-blue-600 text-white px-4 py-2 rounded-lg"
->
-  Test Submit Comment
-</button>
-
               <FaRegBookmark />
               {isAdded ? "Added to Library ✓" : "Add to Library"}
             </button>
