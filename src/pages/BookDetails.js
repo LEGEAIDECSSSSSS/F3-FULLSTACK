@@ -251,9 +251,12 @@ const BookDetails = () => {
 
           {/* Buttons */}
           <div className="flex flex-wrap gap-4 mb-6">
-            <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg">
-              Read Online
+            <button
+               onClick={() => navigate(`/read/${book._id}`)}
+               className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg"
+               > Read Online
             </button>
+
 
             <button
               onClick={handleAddToLibrary}

@@ -16,6 +16,7 @@ import AboutPage from "./pages/AboutPage";
 import Footer from "./components/Footer";
 import LibraryPage from "./pages/LibraryPage";
 import BookDetails from "./pages/BookDetails";
+import ReadPage from "./pages/ReadPage";
 import { LibraryProvider, useLibrary } from "./context/LibraryContext";
 import axios from "axios";
 
@@ -132,6 +133,7 @@ function AppContent({ darkMode, toggleDarkMode }) {
           }
         />
         <Route path="/book/:id" element={<BookDetails />} />
+        <Route path="/read/:id" element={<ReadPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
