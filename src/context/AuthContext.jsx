@@ -11,42 +11,37 @@ const API_BASE =
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
-    // Load user from localStorage on initial render
     const savedUser = localStorage.getItem("user");
     return savedUser ? JSON.parse(savedUser) : null;
   });
+  const [accessToken, setAccessToken] = useState(
+    localStorage.getItem("accessToken") || null
+  );
 
-  // Log the current user whenever it changes (safe)
+  // Sync user and access token to localStorage
   useEffect(() => {
-    console.log("👤 Current user:", user);
-    if (user) {
-      localStorage.setItem("user", JSON.stringify(user));
-    } else {
-      localStorage.removeItem("user");
-    }
-  }, [user]);
+    if (user) localStorage.setItem("user", JSON.stringify(user));
+    else localStorage.removeItem("user");
 
-  // Backend login
+    if (accessToken) localStorage.setItem("accessToken", accessToken);
+    else localStorage.removeItem("accessToken");
+  }, [user, accessToken]);
+
+  // Login function
   const login = async (email, password) => {
     try {
       const res = await fetch(`${API_BASE}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include", // send cookies
+        credentials: "include", // include cookies
         body: JSON.stringify({ email, password }),
       });
 
       const data = await res.json();
+      if (!res.ok) return { success: false, message: data.message || "Login failed" };
 
-      if (!res.ok) {
-        console.error("Login failed:", data.message);
-        return { success: false, message: data.message || "Login failed" };
-      }
-
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
       setUser(data.user);
-      console.log("User logged in:", data.user);
+      setAccessToken(data.accessToken);
 
       return { success: true };
     } catch (err) {
@@ -55,41 +50,34 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Logout
+  // Logout function
   const logout = async () => {
     try {
       await fetch(`${API_BASE}/auth/logout`, {
         method: "POST",
-        credentials: "include",
+        credentials: "include", // send cookie to clear refresh token
       });
     } catch (err) {
       console.warn("Logout request failed:", err);
     }
 
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
     setUser(null);
-    console.log("User logged out");
+    setAccessToken(null);
   };
 
-  // Signup
-  const signup = async (email, password) => {
+  // Signup function
+  const signup = async (username, email, password) => {
     try {
       const res = await fetch(`${API_BASE}/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ username, email, password }),
       });
 
       const data = await res.json();
+      if (!res.ok) return { success: false, message: data.message || "Signup failed" };
 
-      if (!res.ok) {
-        console.error("Signup failed:", data.message);
-        return { success: false, message: data.message || "Signup failed" };
-      }
-
-      console.log("Signup successful:", data);
       return { success: true, message: "Signup successful" };
     } catch (err) {
       console.error("Signup error:", err);
@@ -97,12 +85,54 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Refresh access token
+  const refreshAccessToken = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/auth/refresh`, {
+        method: "POST",
+        credentials: "include", // send refresh cookie
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to refresh token");
+
+      setAccessToken(data.accessToken);
+      return data.accessToken;
+    } catch (err) {
+      console.error("Refresh token error:", err);
+      logout();
+      return null;
+    }
+  };
+
+  // Helper to make API calls with auto-refresh
+  const authFetch = async (url, options = {}) => {
+    // Add Authorization header
+    options.headers = {
+      ...options.headers,
+      Authorization: `Bearer ${accessToken}`,
+    };
+    options.credentials = "include";
+
+    let res = await fetch(url, options);
+    if (res.status === 401) {
+      // Token expired, try refresh
+      const newToken = await refreshAccessToken();
+      if (!newToken) return res;
+
+      options.headers.Authorization = `Bearer ${newToken}`;
+      res = await fetch(url, options);
+    }
+    return res;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, setUser, login, logout, signup }}>
+    <AuthContext.Provider
+      value={{ user, accessToken, login, logout, signup, refreshAccessToken, authFetch }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
 
-// Hook to use the auth context safely
 export const useAuth = () => useContext(AuthContext);
