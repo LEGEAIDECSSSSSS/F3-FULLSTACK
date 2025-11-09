@@ -39,9 +39,9 @@ const HomePage = ({ addToLibrary, darkMode, toggleDarkMode }) => {
 
         // Group by genre
         const grouped = books.reduce((acc, book) => {
-          const genre = book.genre || "Others";
-          if (!acc[genre]) acc[genre] = [];
-          acc[genre].push(book);
+          const type = book.type || "Others";
+          if (!acc[type]) acc[type] = [];
+          acc[type].push(book);
           return acc;
         }, {});
         setBooksByGenre(grouped);

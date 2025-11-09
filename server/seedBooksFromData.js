@@ -21,17 +21,19 @@ const seedBooks = async () => {
   try {
     await connectDB();
 
-    // flatten the booksData categories into one array
+    // Flatten books from each category into one array
     const allBooks = booksData.flatMap(category =>
       category.books.map(b => ({
         title: b.title,
         author: b.author,
         genre: b.genre,
+        type: b.type,
         img: b.img,
         synopsis: b.synopsis,
         rating: b.rating || 0,
-        ratingCount: 1,
+        ratingCount: b.ratingCount || 0,
         comments: [],
+        pdfUrl: b.pdfUrl || "", // 👈 include PDF URLs here
       }))
     );
 

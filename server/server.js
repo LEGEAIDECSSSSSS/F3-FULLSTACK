@@ -31,6 +31,9 @@ app.use(cookieParser());
 
 // Serve static images
 app.use("/images", express.static(path.join(__dirname, "images")));
+// Serve static uploads
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 
 // CORS setup
 const allowedOrigins = [

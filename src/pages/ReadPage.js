@@ -1,100 +1,141 @@
-// src/pages/ReadPage.jsx
+// src/pages/ReadPage.js
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { Document, Page, pdfjs } from "react-pdf";
+import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { motion } from "framer-motion";
-import { FaArrowLeft, FaMoon, FaSun, FaExpand } from "react-icons/fa";
+import { useParams, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import axios from "axios";
+
+// ✅ Updated CSS imports for react-pdf v10
+import "react-pdf/dist/Page/TextLayer.css";
+import "react-pdf/dist/Page/AnnotationLayer.css";
+
+// ✅ Correct worker setup for v10
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  "pdfjs-dist/build/pdf.worker.min.mjs",
+  import.meta.url
+).toString();
 
 const ReadPage = () => {
   const { id } = useParams();
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const [darkMode, setDarkMode] = useState(false);
-  const [fullscreen, setFullscreen] = useState(false);
-  const [sampleText, setSampleText] = useState("");
 
+  const [book, setBook] = useState(null);
+  const [numPages, setNumPages] = useState(null);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [loading, setLoading] = useState(true);
+
+  // 🔹 Fetch book data dynamically from backend
   useEffect(() => {
-    // Simulate fetching book content (later this can fetch a PDF)
-    setTimeout(() => {
-      setSampleText(`
-        Chapter 1: The Beginning
+    const fetchBook = async () => {
+      try {
+        const res = await axios.get(
+          `${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/books/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${user?.token}`,
+            },
+          }
+        );
+        setBook(res.data);
+      } catch (err) {
+        console.error("Error fetching book:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-        The rain fell softly against the windowpane, each drop echoing like a whisper in the quiet room. 
-        In the dim glow of her reading lamp, Amelia turned another page of the ancient book, 
-        unaware that the words she read would soon change everything...
+    fetchBook();
+  }, [id, user]);
 
-        Chapter 2: The Stranger
-
-        The knock came at midnight — sharp, deliberate, and far too confident. 
-        She hesitated only a moment before opening the door to find a man who looked as though 
-        he’d stepped out of the very pages she’d been reading.
-
-        (Sample text — this is where your book content or embedded PDF will load.)
-      `);
-    }, 1000);
-  }, [id]);
-
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen();
-      setFullscreen(true);
-    } else {
-      document.exitFullscreen();
-      setFullscreen(false);
-    }
+  const onDocumentLoadSuccess = ({ numPages }) => {
+    setNumPages(numPages);
   };
 
-  return (
-    <div
-      className={`min-h-screen transition-colors duration-500 ${
-        darkMode ? "bg-black text-gray-100" : "bg-gray-100 text-gray-900"
-      }`}
-    >
-      {/* Top bar */}
-      <div className="flex justify-between items-center px-6 py-4 border-b border-gray-700 bg-opacity-80 backdrop-blur-md sticky top-0 z-10">
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-indigo-500 hover:text-indigo-400"
-        >
-          <FaArrowLeft /> Back
-        </motion.button>
+  const nextPage = () => {
+    if (pageNumber < numPages) setPageNumber(pageNumber + 1);
+  };
 
-        <div className="flex gap-4 items-center">
-          <button
-            onClick={() => setDarkMode(!darkMode)}
-            className="text-lg hover:scale-110 transition-transform"
-          >
-            {darkMode ? <FaSun /> : <FaMoon />}
-          </button>
+  const prevPage = () => {
+    if (pageNumber > 1) setPageNumber(pageNumber - 1);
+  };
 
-          <button
-            onClick={toggleFullscreen}
-            className="text-lg hover:scale-110 transition-transform"
-          >
-            <FaExpand />
-          </button>
-        </div>
+  if (loading)
+    return (
+      <div className="flex items-center justify-center h-screen text-gray-700 dark:text-gray-200">
+        Loading book...
       </div>
+    );
 
-      {/* Reading area */}
-      <div className="max-w-4xl mx-auto py-10 px-6 md:px-10 leading-relaxed text-lg font-serif">
-        {!sampleText ? (
-          <p className="text-center mt-20 text-gray-400 animate-pulse">
-            Loading content...
-          </p>
-        ) : (
-          <pre
-            className="whitespace-pre-wrap"
-            style={{
-              lineHeight: "1.9rem",
-              fontSize: "1.05rem",
-              fontFamily: "Georgia, serif",
-            }}
+  if (!book)
+    return (
+      <div className="flex flex-col items-center justify-center h-screen text-gray-700 dark:text-gray-200">
+        <p>Book not found or access denied.</p>
+        <button
+          onClick={() => navigate(-1)}
+          className="mt-4 bg-gray-700 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+        >
+          Go Back
+        </button>
+      </div>
+    );
+
+  return (
+    <motion.div
+      className="min-h-screen flex flex-col items-center bg-gray-100 dark:bg-gray-900 py-10"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+    >
+      <h1 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">
+        {book.title}
+      </h1>
+
+      <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-lg w-[90%] max-w-4xl">
+        {book.pdfUrl ? (
+          <Document
+            file={book.pdfUrl}
+            onLoadSuccess={onDocumentLoadSuccess}
+            loading={<p>Loading PDF...</p>}
           >
-            {sampleText}
-          </pre>
+            <Page
+              pageNumber={pageNumber}
+              renderTextLayer={true}
+              renderAnnotationLayer={true}
+            />
+          </Document>
+        ) : (
+          <p className="text-gray-700 dark:text-gray-300">
+            No PDF available for this book.
+          </p>
         )}
       </div>
-    </div>
+
+      {numPages && (
+        <div className="flex items-center justify-center gap-4 mt-6">
+          <button
+            onClick={prevPage}
+            disabled={pageNumber <= 1}
+            className="bg-gray-700 text-white px-4 py-2 rounded-full flex items-center gap-2 hover:bg-gray-600 disabled:opacity-40"
+          >
+            <FaArrowLeft /> Prev
+          </button>
+
+          <span className="text-gray-800 dark:text-gray-200">
+            Page {pageNumber} of {numPages}
+          </span>
+
+          <button
+            onClick={nextPage}
+            disabled={pageNumber >= numPages}
+            className="bg-gray-700 text-white px-4 py-2 rounded-full flex items-center gap-2 hover:bg-gray-600 disabled:opacity-40"
+          >
+            Next <FaArrowRight />
+          </button>
+        </div>
+      )}
+    </motion.div>
   );
 };
 
