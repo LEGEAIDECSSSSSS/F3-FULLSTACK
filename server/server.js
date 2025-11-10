@@ -65,7 +65,7 @@ const buildPath = path.join(__dirname, "../build"); // build in root (book/build
 app.use(express.static(buildPath)); // serve all build files
 
 // SPA fallback
-app.get("/*", (req, res) => {
+app.get("*", (req, res) => {
   res.sendFile(path.join(buildPath, "index.html"));
 });
 
