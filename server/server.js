@@ -88,20 +88,16 @@ if (process.env.NODE_ENV === "production" || process.env.RENDER === "true") {
   // Serve React static files
   app.use(express.static(__buildpath));
 
-  // Ensure uploads still work
-  app.use("/uploads", express.static(uploadsPath));
-
-  // SPA fallback for all GET requests not handled by /api, /uploads, /images
-  app.use((req, res, next) => {
+  // SPA fallback: must come after static files & uploads
+  app.get("*", (req, res, next) => {
     if (
-      req.method === "GET" &&
-      !req.path.startsWith("/api") &&
-      !req.path.startsWith("/uploads") &&
-      !req.path.startsWith("/images")
+      req.path.startsWith("/api") ||
+      req.path.startsWith("/uploads") ||
+      req.path.startsWith("/images")
     ) {
-      return res.sendFile(path.join(__buildpath, "index.html"));
+      return next(); // Don't interfere with API or static routes
     }
-    next();
+    res.sendFile(path.join(__buildpath, "index.html"));
   });
 } else {
   app.get("/", (req, res) => res.send("📚 API running locally..."));
