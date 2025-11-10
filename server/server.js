@@ -13,23 +13,17 @@ import libraryRoutes from "./routes/LibraryRoutes.js";
 import bookRoutesFactory from "./routes/bookRoutes.js";
 import { protect } from "./middleware/authMiddleware.js";
 
-// Fix __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Load .env
-dotenv.config({ path: path.join(__dirname, ".env") });
+dotenv.config({ path: path.join(__dirname, "../.env") }); // <- env is in root
 
-// Connect MongoDB
 connectDB();
 
 const app = express();
-
-// ===== Middleware =====
 app.use(express.json());
 app.use(cookieParser());
 
-// ===== CORS =====
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
@@ -50,48 +44,35 @@ app.use(
   })
 );
 
-// ===== Serve static files (uploads & images) =====
-app.use(
-  "/uploads",
-  express.static(path.join(__dirname, "uploads"), {
-    setHeaders: (res) => {
-      res.setHeader("Access-Control-Allow-Origin", "*");
-      res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
-      res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-    },
-  })
-);
+// ===== Serve static files =====
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/images", express.static(path.join(__dirname, "images")));
 
-// ===== API Routes =====
+// ===== API routes =====
 app.use("/api/auth", authRoutes);
 app.use("/api/library", protect, libraryRoutes);
-app.use("/api/books", bookRoutesFactory()); // Pass io if needed
-
-// ===== Serve React SPA =====
-const buildPath = path.join(__dirname, "../build");
-app.use(express.static(buildPath));
-
-// SPA fallback compatible with Express 5
-app.get(/^\/(?!api|uploads|images).*/, (req, res) => {
-  res.sendFile(path.join(buildPath, "index.html"));
-});
 
 // ===== Socket.IO setup =====
 const server = http.createServer(app);
 const io = new IOServer(server, {
-  cors: {
-    origin: allowedOrigins,
-    credentials: true,
-  },
+  cors: { origin: allowedOrigins, credentials: true },
+});
+app.use("/api/books", bookRoutesFactory(io));
+
+// ===== Serve React frontend =====
+const buildPath = path.join(__dirname, "../build"); // build in root (book/build)
+
+app.use(express.static(buildPath)); // serve all build files
+
+// SPA fallback
+app.get("/*", (req, res) => {
+  res.sendFile(path.join(buildPath, "index.html"));
 });
 
+// ===== Socket.IO Events =====
 io.on("connection", (socket) => {
   console.log("📡 Socket connected:", socket.id);
-
-  socket.on("disconnect", () => {
-    console.log("❌ Socket disconnected:", socket.id);
-  });
+  socket.on("disconnect", () => console.log("❌ Socket disconnected:", socket.id));
 });
 
 // ===== Start Server =====
