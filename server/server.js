@@ -29,13 +29,7 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
-// Serve static images
-app.use("/images", express.static(path.join(__dirname, "images")));
-// Serve static uploads
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
-
-// CORS setup
+// CORS setup — must come before static routes
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
@@ -52,9 +46,21 @@ app.use(
         callback(new Error("CORS not allowed for this origin"));
       }
     },
-    credentials: true, // Allow cookies/headers
+    credentials: true, // Allow cookies and headers
   })
 );
+
+// ✅ Explicitly set CORS headers for static files
+app.use("/uploads", (req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*"); // You can restrict this if needed
+  res.header("Access-Control-Allow-Methods", "GET, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type");
+  next();
+});
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// Static images
+app.use("/images", express.static(path.join(__dirname, "images")));
 
 // Routes
 app.use("/api/auth", authRoutes);

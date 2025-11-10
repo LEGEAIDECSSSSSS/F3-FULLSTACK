@@ -5,6 +5,8 @@ import booksData from "../src/data/booksData.js"; // adjust path if needed
 
 dotenv.config();
 
+const BASE_URL = process.env.BASE_URL || "http://localhost:5000";
+
 const MONGO_URI = process.env.MONGO_URI;
 
 const connectDB = async () => {
@@ -33,7 +35,7 @@ const seedBooks = async () => {
         rating: b.rating || 0,
         ratingCount: b.ratingCount || 0,
         comments: [],
-        pdfUrl: b.pdfUrl || "", // 👈 include PDF URLs here
+        pdfUrl: `${BASE_URL}${b.pdfUrl}`, // 👈 include PDF URLs here
       }))
     );
 
