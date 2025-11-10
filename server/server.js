@@ -88,8 +88,8 @@ if (process.env.NODE_ENV === "production" || process.env.RENDER === "true") {
   // Serve React static files
   app.use(express.static(__buildpath));
 
-  // SPA fallback: must come after static files & uploads
-  app.get("*", (req, res, next) => {
+  // SPA fallback: Express 5 compatible
+  app.all("*", (req, res, next) => {
     if (
       req.path.startsWith("/api") ||
       req.path.startsWith("/uploads") ||
