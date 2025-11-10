@@ -13,11 +13,10 @@ import libraryRoutes from "./routes/LibraryRoutes.js";
 import bookRoutesFactory from "./routes/bookRoutes.js";
 import { protect } from "./middleware/authMiddleware.js";
 
-// Fix __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Load environment variables
+// Load .env
 dotenv.config({ path: path.join(__dirname, ".env") });
 
 // Connect MongoDB
@@ -25,11 +24,11 @@ connectDB();
 
 const app = express();
 
-// Middleware
+// ===== Middleware =====
 app.use(express.json());
 app.use(cookieParser());
 
-// CORS setup — must come before static routes
+// ===== CORS =====
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
@@ -46,27 +45,28 @@ app.use(
         callback(new Error("CORS not allowed for this origin"));
       }
     },
-    credentials: true, // Allow cookies and headers
+    credentials: true,
   })
 );
 
-// ✅ Explicitly set CORS headers for static files
-app.use("/uploads", (req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*"); // You can restrict this if needed
-  res.header("Access-Control-Allow-Methods", "GET, OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type");
-  next();
-});
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// ===== Serve static files =====
 
-// Static images
+// ✅ Fix: ensure correct relative path for uploaded PDFs
+const uploadsPath = path.join(__dirname, "uploads");
+app.use("/uploads", express.static(uploadsPath, {
+  setHeaders: (res) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  },
+}));
+
+// ✅ Serve images if any
 app.use("/images", express.static(path.join(__dirname, "images")));
 
-// Routes
+// ===== Routes =====
 app.use("/api/auth", authRoutes);
 app.use("/api/library", protect, libraryRoutes);
-
-// Create HTTP + Socket.IO server
 const server = http.createServer(app);
 
 const io = new IOServer(server, {
@@ -76,20 +76,25 @@ const io = new IOServer(server, {
   },
 });
 
-// Book routes with socket support
 app.use("/api/books", bookRoutesFactory(io));
 
-// Serve frontend
+// ===== Serve Frontend (Render) =====
 const __buildpath = path.join(__dirname, "../build");
 
 if (process.env.NODE_ENV === "production" || process.env.RENDER === "true") {
   app.use(express.static(__buildpath));
-  app.get(/.*/, (req, res) => res.sendFile(path.resolve(__buildpath, "index.html")));
+
+  // ✅ Fix: ensure uploads still work when frontend is served
+  app.use("/uploads", express.static(uploadsPath));
+
+  app.get("*", (req, res) => {
+    res.sendFile(path.resolve(__buildpath, "index.html"));
+  });
 } else {
-  app.get("/", (req, res) => res.send("📚 API is running locally..."));
+  app.get("/", (req, res) => res.send("📚 API running locally..."));
 }
 
-// Socket.IO events
+// ===== Socket.IO =====
 io.on("connection", (socket) => {
   console.log("📡 Socket connected:", socket.id);
 
@@ -98,6 +103,6 @@ io.on("connection", (socket) => {
   });
 });
 
-// Start server
+// ===== Start server =====
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
