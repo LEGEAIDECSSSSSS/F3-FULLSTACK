@@ -69,7 +69,6 @@ app.use("/images", express.static(path.join(__dirname, "images")));
 app.use("/api/auth", authRoutes);
 app.use("/api/library", protect, libraryRoutes);
 
-// ===== Socket.IO Setup =====
 const server = http.createServer(app);
 
 const io = new IOServer(server, {
@@ -89,8 +88,8 @@ if (process.env.NODE_ENV === "production" || process.env.RENDER === "true") {
   // Serve React static files
   app.use(express.static(__buildpath));
 
-  // SPA fallback for Express 4 (fixed wildcard)
-  app.get("*", (req, res, next) => {
+  // SPA fallback for Express 4
+  app.use((req, res, next) => {
     // Skip API and static routes
     if (
       req.path.startsWith("/api") ||
@@ -99,7 +98,13 @@ if (process.env.NODE_ENV === "production" || process.env.RENDER === "true") {
     ) {
       return next();
     }
-    res.sendFile(path.join(__buildpath, "index.html"));
+
+    // Only serve index.html for GET requests
+    if (req.method === "GET") {
+      res.sendFile(path.join(__buildpath, "index.html"));
+    } else {
+      next();
+    }
   });
 } else {
   app.get("/", (req, res) => res.send("📚 API running locally..."));
