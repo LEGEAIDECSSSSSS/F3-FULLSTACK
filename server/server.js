@@ -13,14 +13,14 @@ import libraryRoutes from "./routes/LibraryRoutes.js";
 import bookRoutesFactory from "./routes/bookRoutes.js";
 import { protect } from "./middleware/authMiddleware.js";
 
-// Fix __dirname in ES modules
+// ===== Fix __dirname in ES modules =====
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Load .env
+// ===== Load .env =====
 dotenv.config({ path: path.join(__dirname, ".env") });
 
-// Connect MongoDB
+// ===== Connect MongoDB =====
 connectDB();
 
 const app = express();
@@ -60,7 +60,6 @@ app.use(
       res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
       res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-      // Serve PDFs, JS, WASM with proper MIME
       if (filePath.endsWith(".pdf")) res.setHeader("Content-Type", "application/pdf");
       if (filePath.endsWith(".js")) res.setHeader("Content-Type", "application/javascript");
       if (filePath.endsWith(".wasm")) res.setHeader("Content-Type", "application/wasm");
@@ -69,7 +68,6 @@ app.use(
 );
 
 app.use("/images", express.static(path.join(__dirname, "images")));
-app.use("/static", express.static(path.join(__dirname, "../build/static"))); // React static assets
 
 // ===== API Routes =====
 app.use("/api/auth", authRoutes);
@@ -88,11 +86,13 @@ const io = new IOServer(server, {
 // Book routes with socket support
 app.use("/api/books", bookRoutesFactory(io));
 
-// ===== Serve Frontend (React SPA) =====
+// ===== Serve React Frontend =====
 const __buildpath = path.join(__dirname, "../build");
-app.use(express.static(__buildpath));
 
-// SPA fallback for React Router (Express + path-to-regexp compliant)
+// Serve React static files first
+app.use("/static", express.static(path.join(__buildpath, "static")));
+
+// SPA fallback for React Router (Express + path-to-regexp compatible)
 app.get(/^\/(?!api|uploads|images|static).*$/, (req, res) => {
   res.sendFile(path.join(__buildpath, "index.html"));
 });
