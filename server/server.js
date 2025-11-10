@@ -13,6 +13,7 @@ import libraryRoutes from "./routes/LibraryRoutes.js";
 import bookRoutesFactory from "./routes/bookRoutes.js";
 import { protect } from "./middleware/authMiddleware.js";
 
+// Fix __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -50,23 +51,24 @@ app.use(
 );
 
 // ===== Serve static files =====
-
-// ✅ Fix: ensure correct relative path for uploaded PDFs
 const uploadsPath = path.join(__dirname, "uploads");
-app.use("/uploads", express.static(uploadsPath, {
-  setHeaders: (res) => {
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-  },
-}));
+app.use(
+  "/uploads",
+  express.static(uploadsPath, {
+    setHeaders: (res) => {
+      res.setHeader("Access-Control-Allow-Origin", "*");
+      res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+      res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    },
+  })
+);
 
-// ✅ Serve images if any
 app.use("/images", express.static(path.join(__dirname, "images")));
 
-// ===== Routes =====
+// ===== API Routes =====
 app.use("/api/auth", authRoutes);
 app.use("/api/library", protect, libraryRoutes);
+
 const server = http.createServer(app);
 
 const io = new IOServer(server, {
@@ -76,32 +78,36 @@ const io = new IOServer(server, {
   },
 });
 
+// Book routes with socket support
 app.use("/api/books", bookRoutesFactory(io));
 
-// ===== Serve Frontend (Render) =====
+// ===== Serve Frontend (React SPA) =====
 const __buildpath = path.join(__dirname, "../build");
 
 if (process.env.NODE_ENV === "production" || process.env.RENDER === "true") {
+  // Serve React static files
   app.use(express.static(__buildpath));
 
-  // ✅ Fix: ensure uploads still work when frontend is served
+  // Ensure uploads still work
   app.use("/uploads", express.static(uploadsPath));
 
-app.get("*", (req, res, next) => {
-  // Express 5 treats "*" differently — handle it manually
-  if (req.path.startsWith("/api") || req.path.startsWith("/uploads") || req.path.startsWith("/images")) {
-    return next(); // don’t interfere with API or static routes
-  }
-
-  res.sendFile(path.join(__buildpath, "index.html"));
-});
-
-
+  // SPA fallback for all GET requests not handled by /api, /uploads, /images
+  app.use((req, res, next) => {
+    if (
+      req.method === "GET" &&
+      !req.path.startsWith("/api") &&
+      !req.path.startsWith("/uploads") &&
+      !req.path.startsWith("/images")
+    ) {
+      return res.sendFile(path.join(__buildpath, "index.html"));
+    }
+    next();
+  });
 } else {
   app.get("/", (req, res) => res.send("📚 API running locally..."));
 }
 
-// ===== Socket.IO =====
+// ===== Socket.IO Events =====
 io.on("connection", (socket) => {
   console.log("📡 Socket connected:", socket.id);
 
@@ -110,6 +116,6 @@ io.on("connection", (socket) => {
   });
 });
 
-// ===== Start server =====
+// ===== Start Server =====
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
