@@ -87,9 +87,10 @@ if (process.env.NODE_ENV === "production" || process.env.RENDER === "true") {
   // ✅ Fix: ensure uploads still work when frontend is served
   app.use("/uploads", express.static(uploadsPath));
 
-  app.get("*", (req, res) => {
-    res.sendFile(path.resolve(__buildpath, "index.html"));
-  });
+ app.get("/*", (req, res) => {
+  res.sendFile(path.resolve(__buildpath, "index.html"));
+});
+
 } else {
   app.get("/", (req, res) => res.send("📚 API running locally..."));
 }
