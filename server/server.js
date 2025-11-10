@@ -69,6 +69,7 @@ app.use("/images", express.static(path.join(__dirname, "images")));
 app.use("/api/auth", authRoutes);
 app.use("/api/library", protect, libraryRoutes);
 
+// ===== Socket.IO =====
 const server = http.createServer(app);
 
 const io = new IOServer(server, {
@@ -89,7 +90,7 @@ if (process.env.NODE_ENV === "production" || process.env.RENDER === "true") {
   app.use(express.static(__buildpath));
 
   // SPA fallback: Express 4 compatible
-  app.get("/*", (req, res, next) => {
+  app.get("/:path(*)", (req, res, next) => {
     if (
       req.path.startsWith("/api") ||
       req.path.startsWith("/uploads") ||
