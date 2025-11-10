@@ -93,8 +93,21 @@ const __buildpath = path.join(__dirname, "../build");
 app.use(express.static(__buildpath));
 
 // SPA fallback for React Router (Express + path-to-regexp compliant)
-app.get(/^\/(?!api|uploads|images|static).*$/, (req, res) => {
-  res.sendFile(path.join(__buildpath, "index.html"));
+app.get("/*", (req, res, next) => {
+  if (
+    req.path.startsWith("/api") ||
+    req.path.startsWith("/uploads") ||
+    req.path.startsWith("/images") ||
+    req.path.startsWith("/static")
+  ) {
+    return next();
+  }
+
+  if (req.method === "GET") {
+    res.sendFile(path.join(__buildpath, "index.html"));
+  } else {
+    next();
+  }
 });
 
 // ===== Socket.IO Events =====
