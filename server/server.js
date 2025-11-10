@@ -69,7 +69,7 @@ app.use("/images", express.static(path.join(__dirname, "images")));
 app.use("/api/auth", authRoutes);
 app.use("/api/library", protect, libraryRoutes);
 
-// ===== Socket.IO =====
+// ===== Socket.IO Setup =====
 const server = http.createServer(app);
 
 const io = new IOServer(server, {
@@ -89,14 +89,15 @@ if (process.env.NODE_ENV === "production" || process.env.RENDER === "true") {
   // Serve React static files
   app.use(express.static(__buildpath));
 
-  // SPA fallback: Express 4 compatible
-  app.get("/:path(*)", (req, res, next) => {
+  // SPA fallback for Express 4 (fixed wildcard)
+  app.get("*", (req, res, next) => {
+    // Skip API and static routes
     if (
       req.path.startsWith("/api") ||
       req.path.startsWith("/uploads") ||
       req.path.startsWith("/images")
     ) {
-      return next(); // Don't interfere with API or static routes
+      return next();
     }
     res.sendFile(path.join(__buildpath, "index.html"));
   });
