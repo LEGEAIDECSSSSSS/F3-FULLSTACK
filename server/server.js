@@ -50,11 +50,10 @@ app.use(
   })
 );
 
-// ===== Serve static files =====
-const uploadsPath = path.join(__dirname, "uploads");
+// ===== Serve static files (uploads & images) =====
 app.use(
   "/uploads",
-  express.static(uploadsPath, {
+  express.static(path.join(__dirname, "uploads"), {
     setHeaders: (res) => {
       res.setHeader("Access-Control-Allow-Origin", "*");
       res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
@@ -62,15 +61,24 @@ app.use(
     },
   })
 );
-
 app.use("/images", express.static(path.join(__dirname, "images")));
 
 // ===== API Routes =====
 app.use("/api/auth", authRoutes);
 app.use("/api/library", protect, libraryRoutes);
+app.use("/api/books", bookRoutesFactory()); // Pass io if needed
 
+// ===== Serve React SPA =====
+const buildPath = path.join(__dirname, "../build");
+app.use(express.static(buildPath));
+
+// SPA fallback compatible with Express 5
+app.get(/^\/(?!api|uploads|images).*/, (req, res) => {
+  res.sendFile(path.join(buildPath, "index.html"));
+});
+
+// ===== Socket.IO setup =====
 const server = http.createServer(app);
-
 const io = new IOServer(server, {
   cors: {
     origin: allowedOrigins,
@@ -78,39 +86,6 @@ const io = new IOServer(server, {
   },
 });
 
-// Book routes with socket support
-app.use("/api/books", bookRoutesFactory(io));
-
-// ===== Serve Frontend (React SPA) =====
-const __buildpath = path.join(__dirname, "../build");
-
-if (process.env.NODE_ENV === "production" || process.env.RENDER === "true") {
-  // Serve React static files
-  app.use(express.static(__buildpath));
-
-  // SPA fallback for Express 4
-  app.use((req, res, next) => {
-    // Skip API and static routes
-    if (
-      req.path.startsWith("/api") ||
-      req.path.startsWith("/uploads") ||
-      req.path.startsWith("/images")
-    ) {
-      return next();
-    }
-
-    // Only serve index.html for GET requests
-    if (req.method === "GET") {
-      res.sendFile(path.join(__buildpath, "index.html"));
-    } else {
-      next();
-    }
-  });
-} else {
-  app.get("/", (req, res) => res.send("📚 API running locally..."));
-}
-
-// ===== Socket.IO Events =====
 io.on("connection", (socket) => {
   console.log("📡 Socket connected:", socket.id);
 
