@@ -92,7 +92,7 @@ app.use("/api/books", bookRoutesFactory(io));
 const __buildpath = path.join(__dirname, "../build");
 app.use(express.static(__buildpath));
 
-// SPA fallback for React Router (Regex compatible)
+// SPA fallback for React Router (Express + path-to-regexp compliant)
 app.get(/^\/(?!api|uploads|images|static).*$/, (req, res) => {
   res.sendFile(path.join(__buildpath, "index.html"));
 });
