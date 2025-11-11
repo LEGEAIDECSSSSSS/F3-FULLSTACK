@@ -16,12 +16,12 @@ import { protect } from "./middleware/authMiddleware.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// ===== Load environment variables =====
+// ===== Load backend environment variables =====
 dotenv.config({ path: path.join(__dirname, ".env") });
 
-// ===== Verify environment variables =====
+// ===== Verify critical env variables =====
 if (!process.env.MONGO_URI) {
-  console.error("❌ MONGO_URI is not defined in .env");
+  console.error("❌ MONGO_URI is not defined in server/.env");
   process.exit(1);
 }
 
@@ -34,11 +34,11 @@ try {
   process.exit(1);
 }
 
-// ===== Initialize app =====
+// ===== Initialize Express app =====
 const app = express();
 app.disable("x-powered-by");
 
-// Core middleware
+// ===== Core middleware =====
 app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 
@@ -63,7 +63,7 @@ app.use(
   })
 );
 
-// ===== Static assets =====
+// ===== Static asset routes =====
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/images", express.static(path.join(__dirname, "images")));
 
@@ -80,12 +80,13 @@ const io = new IOServer(server, {
 // Pass io instance into book routes
 app.use("/api/books", bookRoutesFactory(io));
 
-// ===== Frontend serving =====
+// ===== React frontend serving =====
 const buildPath = path.join(__dirname, "../build");
 app.use(express.static(buildPath));
 
-// SPA fallback for frontend routes (Express 5 compatible)
+// SPA fallback (Express 5)
 app.use((req, res, next) => {
+  // ignore API/static routes
   if (req.path.startsWith("/api") || req.path.startsWith("/uploads") || req.path.startsWith("/images")) {
     return next();
   }
