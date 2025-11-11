@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import path from "path";
 import { fileURLToPath } from "url";
 import http from "http";
+import fs from "fs";
 import { Server as IOServer } from "socket.io";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
@@ -18,7 +19,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // ===== Load environment variables =====
-// server/.env is for backend secrets (Mongo URI, JWT secret)
 dotenv.config({ path: path.join(__dirname, ".env") });
 
 // ===== Validate critical env variables =====
@@ -81,22 +81,31 @@ app.use("/api/books", bookRoutesFactory(io));
 
 // ===== Serve React frontend =====
 const buildPath = path.join(__dirname, "../build");
+
+// 1️⃣ Serve React build static files first
 app.use(express.static(buildPath));
 
-// SPA fallback for React routes (safe)
+// 2️⃣ Serve pdf.worker.js and other library assets (if needed)
+app.use("/pdf-worker", express.static(path.join(__dirname, "../node_modules/pdfjs-dist/build")));
+
+// 3️⃣ SPA fallback (catch-all) AFTER static files
 app.use((req, res, next) => {
-  // Skip API/static paths
+  // Skip API/static routes
   if (
     req.path.startsWith("/api") ||
     req.path.startsWith("/uploads") ||
-    req.path.startsWith("/images")
+    req.path.startsWith("/images") ||
+    req.path.startsWith("/pdf-worker")
   ) {
     return next();
   }
 
-  res.sendFile(path.join(buildPath, "index.html"), (err) => {
-    if (err) next(err);
-  });
+  const requestedFile = path.join(buildPath, req.path);
+  if (fs.existsSync(requestedFile)) {
+    res.sendFile(requestedFile);
+  } else {
+    res.sendFile(path.join(buildPath, "index.html"));
+  }
 });
 
 // ===== Global Error Handler =====
