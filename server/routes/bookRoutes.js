@@ -18,7 +18,19 @@ export default function (io) {
   router.get("/", async (req, res) => {
     try {
       const books = await Book.find().lean();
-      res.json(books);
+
+      // ✅ Ensure each book's PDF URL is absolute
+      const baseUrl =
+        process.env.BASE_URL || "http://localhost:5000";
+
+      const updatedBooks = books.map((book) => {
+        if (book.pdfUrl && !book.pdfUrl.startsWith("http")) {
+          book.pdfUrl = `${baseUrl}${book.pdfUrl.startsWith("/") ? "" : "/"}${book.pdfUrl}`;
+        }
+        return book;
+      });
+
+      res.json(updatedBooks);
     } catch (error) {
       console.error("Error fetching books:", error);
       res.status(500).json({ message: "Server error" });
@@ -38,6 +50,14 @@ export default function (io) {
 
       const book = await Book.findById(id).lean();
       if (!book) return res.status(404).json({ message: "Book not found" });
+
+      // ✅ Ensure the single book’s pdfUrl is fully qualified
+      const baseUrl =
+        process.env.BASE_URL || "http://localhost:5000";
+
+      if (book.pdfUrl && !book.pdfUrl.startsWith("http")) {
+        book.pdfUrl = `${baseUrl}${book.pdfUrl.startsWith("/") ? "" : "/"}${book.pdfUrl}`;
+      }
 
       res.json(book);
     } catch (error) {
@@ -70,7 +90,7 @@ export default function (io) {
       book.comments.push(comment);
       await book.save();
 
-      // Broadcast to sockets
+      // 🔄 Broadcast comment to sockets
       io.emit(`bookUpdated:${book._id.toString()}`, { type: "comment", comment });
 
       res.status(201).json(comment);
