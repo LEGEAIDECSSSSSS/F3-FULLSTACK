@@ -16,14 +16,17 @@ import { protect } from "./middleware/authMiddleware.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-dotenv.config({ path: path.join(__dirname, "../.env") }); // <- env is in root
+// Load environment variables (from root)
+dotenv.config({ path: path.join(__dirname, "../.env") });
 
+// ===== Connect to MongoDB =====
 connectDB();
 
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
+// ===== CORS configuration =====
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
@@ -44,7 +47,7 @@ app.use(
   })
 );
 
-// ===== Serve static files =====
+// ===== Static assets (uploads & images) =====
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/images", express.static(path.join(__dirname, "images")));
 
@@ -59,22 +62,27 @@ const io = new IOServer(server, {
 });
 app.use("/api/books", bookRoutesFactory(io));
 
-// ===== Serve React frontend =====
-const buildPath = path.join(__dirname, "../build"); // build in root (book/build)
+// ===== React frontend serving =====
+const buildPath = path.join(__dirname, "../build");
 
-app.use(express.static(buildPath)); // serve all build files
+// Serve static frontend files
+app.use(express.static(buildPath));
 
-// SPA fallback
-app.get(/.*/, (req, res) => {
+// SPA fallback (use regex-safe wildcard for Express 5)
+app.get("*", (req, res, next) => {
+  // prevent intercepting API and uploads routes
+  if (req.path.startsWith("/api") || req.path.startsWith("/uploads") || req.path.startsWith("/images")) {
+    return next();
+  }
   res.sendFile(path.join(buildPath, "index.html"));
 });
 
-// ===== Socket.IO Events =====
+// ===== Socket.IO events =====
 io.on("connection", (socket) => {
   console.log("📡 Socket connected:", socket.id);
   socket.on("disconnect", () => console.log("❌ Socket disconnected:", socket.id));
 });
 
-// ===== Start Server =====
+// ===== Start server =====
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
