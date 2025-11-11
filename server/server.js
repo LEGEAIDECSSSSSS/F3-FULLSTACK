@@ -16,14 +16,18 @@ import { protect } from "./middleware/authMiddleware.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Load environment variables (from root)
+// ===== Load environment variables =====
 dotenv.config({ path: path.join(__dirname, "../.env") });
 
 // ===== Connect to MongoDB =====
-connectDB();
+await connectDB();
 
+// ===== Initialize app =====
 const app = express();
-app.use(express.json());
+app.disable("x-powered-by");
+
+// Core middleware
+app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 
 // ===== CORS configuration =====
@@ -35,7 +39,7 @@ const allowedOrigins = [
 
 app.use(
   cors({
-    origin: (origin, callback) => {
+    origin(origin, callback) {
       if (!origin || allowedOrigins.includes(origin) || origin.endsWith(".onrender.com")) {
         callback(null, true);
       } else {
@@ -47,7 +51,7 @@ app.use(
   })
 );
 
-// ===== Static assets (uploads & images) =====
+// ===== Static assets =====
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/images", express.static(path.join(__dirname, "images")));
 
@@ -60,21 +64,27 @@ const server = http.createServer(app);
 const io = new IOServer(server, {
   cors: { origin: allowedOrigins, credentials: true },
 });
+
+// Pass io instance into routes that need it
 app.use("/api/books", bookRoutesFactory(io));
 
-// ===== React frontend serving =====
+// ===== Frontend serving =====
 const buildPath = path.join(__dirname, "../build");
-
-// Serve static frontend files
 app.use(express.static(buildPath));
 
-// SPA fallback (use regex-safe wildcard for Express 5)
-app.get("*", (req, res, next) => {
-  // prevent intercepting API and uploads routes
+// Express 5 route ordering + SPA fallback
+app.use((req, res, next) => {
   if (req.path.startsWith("/api") || req.path.startsWith("/uploads") || req.path.startsWith("/images")) {
     return next();
   }
   res.sendFile(path.join(buildPath, "index.html"));
+});
+
+// ===== Global Error Handler (Express 5 catches async errors automatically) =====
+app.use((err, req, res, next) => {
+  console.error("🔥 Express Error:", err);
+  const status = err.status || 500;
+  res.status(status).json({ message: err.message || "Internal Server Error" });
 });
 
 // ===== Socket.IO events =====
