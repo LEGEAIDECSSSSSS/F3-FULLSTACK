@@ -17,10 +17,22 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // ===== Load environment variables =====
-dotenv.config({ path: path.join(__dirname, "../.env") });
+dotenv.config({ path: path.join(__dirname, ".env") });
+
+// ===== Verify environment variables =====
+if (!process.env.MONGO_URI) {
+  console.error("❌ MONGO_URI is not defined in .env");
+  process.exit(1);
+}
 
 // ===== Connect to MongoDB =====
-await connectDB();
+try {
+  await connectDB();
+  console.log("✅ MongoDB connected");
+} catch (err) {
+  console.error("❌ Failed to connect to MongoDB:", err.message);
+  process.exit(1);
+}
 
 // ===== Initialize app =====
 const app = express();
@@ -65,14 +77,14 @@ const io = new IOServer(server, {
   cors: { origin: allowedOrigins, credentials: true },
 });
 
-// Pass io instance into routes that need it
+// Pass io instance into book routes
 app.use("/api/books", bookRoutesFactory(io));
 
 // ===== Frontend serving =====
 const buildPath = path.join(__dirname, "../build");
 app.use(express.static(buildPath));
 
-// Express 5 route ordering + SPA fallback
+// SPA fallback for frontend routes (Express 5 compatible)
 app.use((req, res, next) => {
   if (req.path.startsWith("/api") || req.path.startsWith("/uploads") || req.path.startsWith("/images")) {
     return next();
@@ -80,7 +92,7 @@ app.use((req, res, next) => {
   res.sendFile(path.join(buildPath, "index.html"));
 });
 
-// ===== Global Error Handler (Express 5 catches async errors automatically) =====
+// ===== Global Error Handler =====
 app.use((err, req, res, next) => {
   console.error("🔥 Express Error:", err);
   const status = err.status || 500;
