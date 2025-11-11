@@ -13,15 +13,17 @@ import libraryRoutes from "./routes/LibraryRoutes.js";
 import bookRoutesFactory from "./routes/bookRoutes.js";
 import { protect } from "./middleware/authMiddleware.js";
 
+// ===== __dirname for ES modules =====
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// ===== Load backend environment variables =====
+// ===== Load environment variables =====
+// server/.env is for backend secrets (Mongo URI, JWT secret)
 dotenv.config({ path: path.join(__dirname, ".env") });
 
-// ===== Verify critical env variables =====
-if (!process.env.MONGO_URI) {
-  console.error("❌ MONGO_URI is not defined in server/.env");
+// ===== Validate critical env variables =====
+if (!process.env.MONGO_URI || !process.env.JWT_SECRET) {
+  console.error("❌ Missing critical environment variables in server/.env");
   process.exit(1);
 }
 
@@ -34,21 +36,20 @@ try {
   process.exit(1);
 }
 
-// ===== Initialize Express app =====
+// ===== Initialize Express =====
 const app = express();
 app.disable("x-powered-by");
 
-// ===== Core middleware =====
+// ===== Middleware =====
 app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 
-// ===== CORS configuration =====
+// ===== CORS =====
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
   "https://funficfalls.onrender.com",
 ];
-
 app.use(
   cors({
     origin(origin, callback) {
@@ -76,21 +77,26 @@ const server = http.createServer(app);
 const io = new IOServer(server, {
   cors: { origin: allowedOrigins, credentials: true },
 });
-
-// Pass io instance into book routes
 app.use("/api/books", bookRoutesFactory(io));
 
-// ===== React frontend serving =====
+// ===== Serve React frontend =====
 const buildPath = path.join(__dirname, "../build");
 app.use(express.static(buildPath));
 
-// SPA fallback (Express 5)
+// SPA fallback for React routes (safe)
 app.use((req, res, next) => {
-  // ignore API/static routes
-  if (req.path.startsWith("/api") || req.path.startsWith("/uploads") || req.path.startsWith("/images")) {
+  // Skip API/static paths
+  if (
+    req.path.startsWith("/api") ||
+    req.path.startsWith("/uploads") ||
+    req.path.startsWith("/images")
+  ) {
     return next();
   }
-  res.sendFile(path.join(buildPath, "index.html"));
+
+  res.sendFile(path.join(buildPath, "index.html"), (err) => {
+    if (err) next(err);
+  });
 });
 
 // ===== Global Error Handler =====
