@@ -97,18 +97,19 @@ const ReadPage = () => {
       : `${BACKEND_URL}${book.pdfUrl.startsWith("/") ? "" : "/"}${book.pdfUrl}`
     : null;
 
+  // 🔹 Log the exact PDF URL the front end is trying to fetch
+  console.log("📄 PDF source URL:", pdfSource);
+
   return (
     <motion.div
       className="min-h-screen flex flex-col items-center bg-gray-100 dark:bg-gray-900 py-10"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
     >
-      {/* 🔹 Book title */}
       <h1 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">
         {book.title}
       </h1>
 
-      {/* 🔹 PDF Viewer Section */}
       <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-lg w-[90%] max-w-4xl">
         {pdfSource ? (
           <Document
@@ -130,7 +131,6 @@ const ReadPage = () => {
         )}
       </div>
 
-      {/* 🔹 Pagination Controls */}
       {numPages && (
         <div className="flex items-center justify-center gap-4 mt-6">
           <button
