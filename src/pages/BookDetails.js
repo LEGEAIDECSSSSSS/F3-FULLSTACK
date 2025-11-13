@@ -1,3 +1,4 @@
+// src/pages/BookDetails.js
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FaStar, FaArrowLeft, FaRegBookmark, FaComments } from "react-icons/fa";
@@ -6,11 +7,16 @@ import { useLibrary } from "../context/LibraryContext";
 import { useAuth } from "../context/AuthContext";
 import { io as ioClient } from "socket.io-client";
 
-// PDF.js imports for viewing PDFs
+// ===== PDF.js imports for viewing PDFs =====
 import { Document, Page, pdfjs } from "react-pdf";
 pdfjs.GlobalWorkerOptions.workerSrc = "/pdf-worker/pdf.worker.js"; // Serve worker from static route
 
-const BACKEND_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+// ===== Dynamically detect backend base URL =====
+const BACKEND_URL =
+  process.env.REACT_APP_API_URL ||
+  (window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "https://funficfalls-server.onrender.com"); // 🟩 Replace with your actual backend Render URL
 
 const BookDetails = () => {
   const { id } = useParams();
@@ -113,12 +119,19 @@ const BookDetails = () => {
   // ===== PDF event: successful load =====
   const onDocumentLoadSuccess = ({ numPages }) => setNumPages(numPages);
 
-  if (loading) return <p className="text-center mt-20 text-gray-500">Loading book...</p>;
+  if (loading)
+    return <p className="text-center mt-20 text-gray-500">Loading book...</p>;
+
   if (!book)
     return (
       <p className="text-center mt-20 text-red-500">
         Book not found.
-        <button onClick={() => navigate(-1)} className="ml-2 underline text-blue-500">Go back</button>
+        <button
+          onClick={() => navigate(-1)}
+          className="ml-2 underline text-blue-500"
+        >
+          Go back
+        </button>
       </p>
     );
 
@@ -151,7 +164,11 @@ const BookDetails = () => {
       <div className="grid md:grid-cols-2 gap-10 items-start">
         {/* ===== Book Cover ===== */}
         <motion.img
-          src={book.img.startsWith("http") ? book.img : `${book.img.startsWith("/") ? "" : "/"}${book.img}`}
+          src={
+            book.img.startsWith("http")
+              ? book.img
+              : `${book.img.startsWith("/") ? "" : "/"}${book.img}`
+          }
           alt={book.title}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -159,36 +176,57 @@ const BookDetails = () => {
           className="rounded-2xl shadow-lg w-full h-auto object-cover"
         />
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.2 }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.2 }}
+        >
           <h1 className="text-4xl font-bold mb-3">{book.title}</h1>
           <p className="text-lg text-gray-500 dark:text-gray-400 mb-1">
-            by <span className="text-gray-800 dark:text-gray-200">{book.author}</span>
+            by{" "}
+            <span className="text-gray-800 dark:text-gray-200">
+              {book.author}
+            </span>
           </p>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{book.genre}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+            {book.genre}
+          </p>
 
           {/* ===== Rating Display ===== */}
           <div className="flex items-center gap-1 mb-5">
             {[...Array(5)].map((_, i) => {
               const filled = i < Math.round(book.rating || 0);
-              return <FaStar key={i} className={filled ? "text-yellow-400" : "text-gray-400"} />;
+              return (
+                <FaStar
+                  key={i}
+                  className={filled ? "text-yellow-400" : "text-gray-400"}
+                />
+              );
             })}
             <span className="ml-2 text-gray-500 dark:text-gray-400">
               {(book.rating || 0).toFixed(1)} ({book.ratingCount || 0} ratings)
             </span>
           </div>
 
-          <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-6">{book.synopsis}</p>
+          <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
+            {book.synopsis}
+          </p>
 
           {/* ===== Buttons ===== */}
           <div className="flex flex-wrap gap-4 mb-6">
-            <button onClick={() => navigate(`/read/${book._id}`)} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg">
+            <button
+              onClick={() => navigate(`/read/${book._id}`)}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg"
+            >
               Read Online
             </button>
             <button
               onClick={handleAddToLibrary}
               disabled={!user || isAdded}
               className={`flex items-center gap-2 px-6 py-2 rounded-lg ${
-                isAdded ? "bg-green-600 text-white cursor-default" : "bg-gray-800 text-white hover:bg-gray-700"
+                isAdded
+                  ? "bg-green-600 text-white cursor-default"
+                  : "bg-gray-800 text-white hover:bg-gray-700"
               }`}
             >
               <FaRegBookmark />
@@ -202,13 +240,24 @@ const BookDetails = () => {
               <h3 className="font-semibold mb-2">Preview PDF</h3>
               <div className="border rounded-lg overflow-auto max-h-[600px]">
                 <Document
-                  file={book.pdfPath.startsWith("http") ? book.pdfPath : `${BACKEND_URL}${book.pdfPath.startsWith("/") ? "" : "/"}${book.pdfPath}`}
+                  // 🟩 Correctly resolves PDF file path for local + hosted
+                  file={
+                    book.pdfPath.startsWith("http")
+                      ? book.pdfPath
+                      : `${BACKEND_URL}${
+                          book.pdfPath.startsWith("/") ? "" : "/"
+                        }${book.pdfPath}`
+                  }
                   onLoadSuccess={onDocumentLoadSuccess}
                   loading="Loading PDF..."
                   options={{ workerSrc: "/pdf-worker/pdf.worker.js" }}
                 >
                   {Array.from(new Array(numPages), (el, index) => (
-                    <Page key={`page_${index + 1}`} pageNumber={index + 1} width={600} />
+                    <Page
+                      key={`page_${index + 1}`}
+                      pageNumber={index + 1}
+                      width={600}
+                    />
                   ))}
                 </Document>
               </div>
@@ -227,12 +276,18 @@ const BookDetails = () => {
                     onMouseEnter={() => setHoverRating(n)}
                     onMouseLeave={() => setHoverRating(0)}
                     onClick={() => submitRating(n)}
-                    className={`cursor-pointer ${n <= (hoverRating || Math.round(book.rating || 0)) ? "text-yellow-400" : "text-gray-400"}`}
+                    className={`cursor-pointer ${
+                      n <= (hoverRating || Math.round(book.rating || 0))
+                        ? "text-yellow-400"
+                        : "text-gray-400"
+                    }`}
                   />
                 ))}
               </div>
             ) : (
-              <p className="text-gray-400 text-sm">You’ve already rated this book.</p>
+              <p className="text-gray-400 text-sm">
+                You’ve already rated this book.
+              </p>
             )}
           </div>
 
@@ -265,10 +320,15 @@ const BookDetails = () => {
               <p className="text-gray-400">No comments yet.</p>
             ) : (
               book.comments.map((c, i) => (
-                <div key={i} className="bg-gray-700 p-3 rounded-lg mb-3 text-gray-100">
+                <div
+                  key={i}
+                  className="bg-gray-700 p-3 rounded-lg mb-3 text-gray-100"
+                >
                   <strong>{c.username || "Anonymous"}</strong>
                   <p>{c.text}</p>
-                  <small className="text-gray-400 block mt-1">{new Date(c.createdAt).toLocaleString()}</small>
+                  <small className="text-gray-400 block mt-1">
+                    {new Date(c.createdAt).toLocaleString()}
+                  </small>
                 </div>
               ))
             )}
