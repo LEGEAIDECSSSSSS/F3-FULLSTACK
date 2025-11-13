@@ -14,6 +14,9 @@ import "react-pdf/dist/Page/AnnotationLayer.css";
 // ✅ Correct worker setup for pdfjs-dist v5+
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
+// ✅ Central backend URL setup
+const BACKEND_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+
 const ReadPage = () => {
   const { id } = useParams();
   const { user } = useAuth();
@@ -23,22 +26,19 @@ const ReadPage = () => {
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // 🔹 Fetch book data dynamically from backend
+  // 🔹 Fetch book details dynamically from backend
   useEffect(() => {
     const fetchBook = async () => {
       try {
-        const res = await axios.get(
-          `${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/books/${id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${user?.token}`,
-            },
-          }
-        );
+        const res = await axios.get(`${BACKEND_URL}/api/books/${id}`, {
+          headers: { Authorization: `Bearer ${user?.token}` },
+        });
         setBook(res.data);
       } catch (err) {
-        console.error("Error fetching book:", err);
+        console.error("Error fetching book:", err.response?.data || err.message);
+        setError("Failed to load book details. Please try again later.");
       } finally {
         setLoading(false);
       }
@@ -47,18 +47,14 @@ const ReadPage = () => {
     fetchBook();
   }, [id, user]);
 
-  const onDocumentLoadSuccess = ({ numPages }) => {
-    setNumPages(numPages);
-  };
+  // ✅ Handle PDF page count once loaded
+  const onDocumentLoadSuccess = ({ numPages }) => setNumPages(numPages);
 
-  const nextPage = () => {
-    if (pageNumber < numPages) setPageNumber(pageNumber + 1);
-  };
+  // ✅ Page navigation
+  const nextPage = () => pageNumber < numPages && setPageNumber(pageNumber + 1);
+  const prevPage = () => pageNumber > 1 && setPageNumber(pageNumber - 1);
 
-  const prevPage = () => {
-    if (pageNumber > 1) setPageNumber(pageNumber - 1);
-  };
-
+  // ✅ Loading state
   if (loading)
     return (
       <div className="flex items-center justify-center h-screen text-gray-700 dark:text-gray-200">
@@ -66,6 +62,21 @@ const ReadPage = () => {
       </div>
     );
 
+  // ✅ Error state
+  if (error)
+    return (
+      <div className="flex flex-col items-center justify-center h-screen text-gray-700 dark:text-gray-200">
+        <p>{error}</p>
+        <button
+          onClick={() => navigate(-1)}
+          className="mt-4 bg-gray-700 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+        >
+          Go Back
+        </button>
+      </div>
+    );
+
+  // ✅ If book data failed or is missing
   if (!book)
     return (
       <div className="flex flex-col items-center justify-center h-screen text-gray-700 dark:text-gray-200">
@@ -79,27 +90,37 @@ const ReadPage = () => {
       </div>
     );
 
+  // ✅ Build PDF source dynamically — supports both local and hosted files
+  const pdfSource = book.pdfUrl
+    ? book.pdfUrl.startsWith("http")
+      ? book.pdfUrl
+      : `${BACKEND_URL}${book.pdfUrl.startsWith("/") ? "" : "/"}${book.pdfUrl}`
+    : null;
+
   return (
     <motion.div
       className="min-h-screen flex flex-col items-center bg-gray-100 dark:bg-gray-900 py-10"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
     >
+      {/* 🔹 Book title */}
       <h1 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">
         {book.title}
       </h1>
 
+      {/* 🔹 PDF Viewer Section */}
       <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-lg w-[90%] max-w-4xl">
-        {book.pdfUrl ? (
+        {pdfSource ? (
           <Document
-            file={book.pdfUrl}
+            file={pdfSource}
             onLoadSuccess={onDocumentLoadSuccess}
             loading={<p>Loading PDF...</p>}
+            onLoadError={(err) => console.error("PDF Load Error:", err)}
           >
             <Page
               pageNumber={pageNumber}
-              renderTextLayer={true}
-              renderAnnotationLayer={true}
+              renderTextLayer
+              renderAnnotationLayer
             />
           </Document>
         ) : (
@@ -109,6 +130,7 @@ const ReadPage = () => {
         )}
       </div>
 
+      {/* 🔹 Pagination Controls */}
       {numPages && (
         <div className="flex items-center justify-center gap-4 mt-6">
           <button
