@@ -97,7 +97,7 @@ const ReadPage = () => {
       : `${BACKEND_URL}${book.pdfUrl.startsWith("/") ? "" : "/"}${book.pdfUrl}`
     : null;
 
-  // 🔹 Log the exact PDF URL the front end is trying to fetch
+  // 🔹 Log the exact PDF URL the front end is trying to fetch remove later
   console.log("📄 PDF source URL:", pdfSource);
 
   return (
