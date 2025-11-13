@@ -14,9 +14,6 @@ import "react-pdf/dist/Page/AnnotationLayer.css";
 // ✅ Correct worker setup for pdfjs-dist v5+
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
-// ✅ Central backend URL setup
-const BACKEND_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
-
 const ReadPage = () => {
   const { id } = useParams();
   const { user } = useAuth();
@@ -27,6 +24,15 @@ const ReadPage = () => {
   const [pageNumber, setPageNumber] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // 🔹 Determine backend URL dynamically
+  const BACKEND_URL =
+    process.env.REACT_APP_API_URL ||
+    (window.location.hostname === "localhost"
+      ? "http://localhost:5000"
+      : `https://${window.location.hostname}`);
+
+  console.log("📄 BACKEND_URL:", BACKEND_URL);
 
   // 🔹 Fetch book details dynamically from backend
   useEffect(() => {
@@ -45,7 +51,7 @@ const ReadPage = () => {
     };
 
     fetchBook();
-  }, [id, user]);
+  }, [id, user, BACKEND_URL]);
 
   // ✅ Handle PDF page count once loaded
   const onDocumentLoadSuccess = ({ numPages }) => setNumPages(numPages);
@@ -90,14 +96,14 @@ const ReadPage = () => {
       </div>
     );
 
-  // ✅ Build PDF source dynamically — supports both local and hosted files
+  // ✅ Build PDF source dynamically — auto detects production vs localhost
   const pdfSource = book.pdfUrl
     ? book.pdfUrl.startsWith("http")
       ? book.pdfUrl
       : `${BACKEND_URL}${book.pdfUrl.startsWith("/") ? "" : "/"}${book.pdfUrl}`
     : null;
 
-  // 🔹 Log the exact PDF URL the front end is trying to fetch remove later
+  // 🔹 Log the exact PDF URL the front end is trying to fetch
   console.log("📄 PDF source URL:", pdfSource);
 
   return (
@@ -118,11 +124,7 @@ const ReadPage = () => {
             loading={<p>Loading PDF...</p>}
             onLoadError={(err) => console.error("PDF Load Error:", err)}
           >
-            <Page
-              pageNumber={pageNumber}
-              renderTextLayer
-              renderAnnotationLayer
-            />
+            <Page pageNumber={pageNumber} renderTextLayer renderAnnotationLayer />
           </Document>
         ) : (
           <p className="text-gray-700 dark:text-gray-300">
