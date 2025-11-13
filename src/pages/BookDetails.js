@@ -10,6 +10,8 @@ import { io as ioClient } from "socket.io-client";
 import { Document, Page, pdfjs } from "react-pdf";
 pdfjs.GlobalWorkerOptions.workerSrc = "/pdf-worker/pdf.worker.js"; // Serve worker from static route
 
+const BACKEND_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+
 const BookDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -200,7 +202,7 @@ const BookDetails = () => {
               <h3 className="font-semibold mb-2">Preview PDF</h3>
               <div className="border rounded-lg overflow-auto max-h-[600px]">
                 <Document
-                  file={book.pdfPath.startsWith("http") ? book.pdfPath : `${book.pdfPath.startsWith("/") ? "" : "/"}${book.pdfPath}`}
+                  file={book.pdfPath.startsWith("http") ? book.pdfPath : `${BACKEND_URL}${book.pdfPath.startsWith("/") ? "" : "/"}${book.pdfPath}`}
                   onLoadSuccess={onDocumentLoadSuccess}
                   loading="Loading PDF..."
                   options={{ workerSrc: "/pdf-worker/pdf.worker.js" }}
