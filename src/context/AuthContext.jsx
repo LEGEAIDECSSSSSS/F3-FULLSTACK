@@ -1,5 +1,6 @@
 // src/context/AuthContext.jsx
 import { createContext, useContext, useState, useEffect } from "react";
+import axios from "axios";
 
 const AuthContext = createContext();
 
@@ -14,6 +15,7 @@ export const AuthProvider = ({ children }) => {
     const savedUser = localStorage.getItem("user");
     return savedUser ? JSON.parse(savedUser) : null;
   });
+
   const [accessToken, setAccessToken] = useState(
     localStorage.getItem("accessToken") || null
   );
@@ -27,13 +29,45 @@ export const AuthProvider = ({ children }) => {
     else localStorage.removeItem("accessToken");
   }, [user, accessToken]);
 
-  // Login function
+  // ===== Axios instance with interceptors =====
+  const api = axios.create({
+    baseURL: API_BASE,
+    withCredentials: true,
+  });
+
+  api.interceptors.request.use(async (config) => {
+    let token = accessToken;
+
+    // Attach token
+    if (token) config.headers.Authorization = `Bearer ${token}`;
+    return config;
+  });
+
+  api.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+      const originalRequest = error.config;
+      if (error.response?.status === 401 && !originalRequest._retry) {
+        originalRequest._retry = true;
+
+        // Attempt to refresh token
+        const newToken = await refreshAccessToken();
+        if (newToken) {
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          return api(originalRequest);
+        }
+      }
+      return Promise.reject(error);
+    }
+  );
+
+  // ===== Login =====
   const login = async (email, password) => {
     try {
       const res = await fetch(`${API_BASE}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include", // include cookies
+        credentials: "include",
         body: JSON.stringify({ email, password }),
       });
 
@@ -50,12 +84,12 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Logout function
+  // ===== Logout =====
   const logout = async () => {
     try {
       await fetch(`${API_BASE}/auth/logout`, {
         method: "POST",
-        credentials: "include", // send cookie to clear refresh token
+        credentials: "include",
       });
     } catch (err) {
       console.warn("Logout request failed:", err);
@@ -65,7 +99,7 @@ export const AuthProvider = ({ children }) => {
     setAccessToken(null);
   };
 
-  // Signup function
+  // ===== Signup =====
   const signup = async (username, email, password) => {
     try {
       const res = await fetch(`${API_BASE}/auth/signup`, {
@@ -85,14 +119,13 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Refresh access token
+  // ===== Refresh access token =====
   const refreshAccessToken = async () => {
     try {
       const res = await fetch(`${API_BASE}/auth/refresh`, {
         method: "POST",
-        credentials: "include", // send refresh cookie
+        credentials: "include",
       });
-
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to refresh token");
 
@@ -105,30 +138,20 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Helper to make API calls with auto-refresh
-  const authFetch = async (url, options = {}) => {
-    // Add Authorization header
-    options.headers = {
-      ...options.headers,
-      Authorization: `Bearer ${accessToken}`,
-    };
-    options.credentials = "include";
-
-    let res = await fetch(url, options);
-    if (res.status === 401) {
-      // Token expired, try refresh
-      const newToken = await refreshAccessToken();
-      if (!newToken) return res;
-
-      options.headers.Authorization = `Bearer ${newToken}`;
-      res = await fetch(url, options);
-    }
-    return res;
-  };
+  // ===== Helper to use axios with auto-refresh =====
+  const authApi = api;
 
   return (
     <AuthContext.Provider
-      value={{ user, accessToken, login, logout, signup, refreshAccessToken, authFetch }}
+      value={{
+        user,
+        accessToken,
+        login,
+        logout,
+        signup,
+        refreshAccessToken,
+        authApi, // Use this in components like BookDetails
+      }}
     >
       {children}
     </AuthContext.Provider>

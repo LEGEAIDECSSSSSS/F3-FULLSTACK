@@ -7,13 +7,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
 
-// ✅ Updated CSS imports for react-pdf v10
+// ✅ Updated CSS imports for react-pdf v10+
 import "react-pdf/dist/Page/TextLayer.css";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 
-// ✅ Correct worker setup for v10
-pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js`;
-
+// ✅ Correct worker setup for pdfjs-dist v5+
+pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 const ReadPage = () => {
   const { id } = useParams();
