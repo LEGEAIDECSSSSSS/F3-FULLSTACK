@@ -87,8 +87,12 @@ const ReadPage = () => {
       </div>
     );
 
-  // ✅ Use relative path for PDF source — works for production and localhost
-  const pdfSource = book.pdfUrl || null;
+  // ✅ Build PDF source dynamically — always uses current origin
+  const pdfSource = book.pdfUrl
+    ? book.pdfUrl.startsWith("http")
+      ? book.pdfUrl
+      : `${window.location.origin}${book.pdfUrl.startsWith("/") ? "" : "/"}${book.pdfUrl}`
+    : null;
 
   console.log("📄 PDF source URL:", pdfSource);
 

@@ -7,16 +7,20 @@ import { useLibrary } from "../context/LibraryContext";
 import { useAuth } from "../context/AuthContext";
 import { io as ioClient } from "socket.io-client";
 
-// ===== PDF.js imports for viewing PDFs =====
+// ===== PDF.js imports =====
 import { Document, Page, pdfjs } from "react-pdf";
-pdfjs.GlobalWorkerOptions.workerSrc = "/pdf-worker/pdf.worker.js"; // Serve worker from static route
+import "react-pdf/dist/Page/TextLayer.css";
+import "react-pdf/dist/Page/AnnotationLayer.css";
 
-// ===== Dynamically detect backend base URL =====
+// ✅ Use CDN worker for PDF.js
+pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+
+// ===== Backend URL =====
 const BACKEND_URL =
   process.env.REACT_APP_API_URL ||
   (window.location.hostname === "localhost"
     ? "http://localhost:5000"
-    : "https://funficfalls-server.onrender.com"); // 🟩 Replace with your actual backend Render URL
+    : "https://funficfalls-server.onrender.com");
 
 const BookDetails = () => {
   const { id } = useParams();
@@ -30,12 +34,12 @@ const BookDetails = () => {
   const [userRated, setUserRated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [toastMessage, setToastMessage] = useState("");
-  const [numPages, setNumPages] = useState(null); // PDF page count
+  const [numPages, setNumPages] = useState(null);
   const socketRef = useRef(null);
 
   const isAdded = book && library.some((item) => item.id === book._id);
 
-  // ===== Fetch book details from API =====
+  // ===== Fetch book details =====
   useEffect(() => {
     const fetchBook = async () => {
       try {
@@ -52,7 +56,7 @@ const BookDetails = () => {
 
   // ===== Socket.IO real-time updates =====
   useEffect(() => {
-    const socket = ioClient("/", { withCredentials: true });
+    const socket = ioClient(BACKEND_URL, { withCredentials: true });
     socketRef.current = socket;
 
     socket.on(`bookUpdated:${id}`, (update) => {
@@ -70,7 +74,7 @@ const BookDetails = () => {
     return () => socket.disconnect();
   }, [id]);
 
-  // ===== Add book to user's library =====
+  // ===== Add to library =====
   const handleAddToLibrary = () => {
     if (!user) return alert("You must be logged in to add to library.");
     if (!isAdded) addToLibrary({ id: book._id, title: book.title, img: book.img });
@@ -116,20 +120,15 @@ const BookDetails = () => {
     }
   };
 
-  // ===== PDF event: successful load =====
+  // ===== PDF loaded successfully =====
   const onDocumentLoadSuccess = ({ numPages }) => setNumPages(numPages);
 
-  if (loading)
-    return <p className="text-center mt-20 text-gray-500">Loading book...</p>;
-
+  if (loading) return <p className="text-center mt-20 text-gray-500">Loading book...</p>;
   if (!book)
     return (
       <p className="text-center mt-20 text-red-500">
         Book not found.
-        <button
-          onClick={() => navigate(-1)}
-          className="ml-2 underline text-blue-500"
-        >
+        <button onClick={() => navigate(-1)} className="ml-2 underline text-blue-500">
           Go back
         </button>
       </p>
@@ -137,7 +136,7 @@ const BookDetails = () => {
 
   return (
     <div className="relative min-h-screen py-10 px-6 md:px-20 bg-gray-50 dark:bg-black text-gray-900 dark:text-gray-100">
-      {/* ===== Toast notifications ===== */}
+      {/* ===== Toast ===== */}
       <AnimatePresence>
         {toastMessage && (
           <motion.div
@@ -167,7 +166,7 @@ const BookDetails = () => {
           src={
             book.img.startsWith("http")
               ? book.img
-              : `${book.img.startsWith("/") ? "" : "/"}${book.img}`
+              : `${window.location.origin}${book.img.startsWith("/") ? "" : "/"}${book.img}`
           }
           alt={book.title}
           initial={{ opacity: 0, y: 20 }}
@@ -183,34 +182,22 @@ const BookDetails = () => {
         >
           <h1 className="text-4xl font-bold mb-3">{book.title}</h1>
           <p className="text-lg text-gray-500 dark:text-gray-400 mb-1">
-            by{" "}
-            <span className="text-gray-800 dark:text-gray-200">
-              {book.author}
-            </span>
+            by <span className="text-gray-800 dark:text-gray-200">{book.author}</span>
           </p>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
-            {book.genre}
-          </p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{book.genre}</p>
 
           {/* ===== Rating Display ===== */}
           <div className="flex items-center gap-1 mb-5">
             {[...Array(5)].map((_, i) => {
               const filled = i < Math.round(book.rating || 0);
-              return (
-                <FaStar
-                  key={i}
-                  className={filled ? "text-yellow-400" : "text-gray-400"}
-                />
-              );
+              return <FaStar key={i} className={filled ? "text-yellow-400" : "text-gray-400"} />;
             })}
             <span className="ml-2 text-gray-500 dark:text-gray-400">
               {(book.rating || 0).toFixed(1)} ({book.ratingCount || 0} ratings)
             </span>
           </div>
 
-          <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
-            {book.synopsis}
-          </p>
+          <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-6">{book.synopsis}</p>
 
           {/* ===== Buttons ===== */}
           <div className="flex flex-wrap gap-4 mb-6">
@@ -224,13 +211,10 @@ const BookDetails = () => {
               onClick={handleAddToLibrary}
               disabled={!user || isAdded}
               className={`flex items-center gap-2 px-6 py-2 rounded-lg ${
-                isAdded
-                  ? "bg-green-600 text-white cursor-default"
-                  : "bg-gray-800 text-white hover:bg-gray-700"
+                isAdded ? "bg-green-600 text-white cursor-default" : "bg-gray-800 text-white hover:bg-gray-700"
               }`}
             >
-              <FaRegBookmark />
-              {isAdded ? "Added to Library ✓" : "Add to Library"}
+              <FaRegBookmark /> {isAdded ? "Added to Library ✓" : "Add to Library"}
             </button>
           </div>
 
@@ -240,25 +224,18 @@ const BookDetails = () => {
               <h3 className="font-semibold mb-2">Preview PDF</h3>
               <div className="border rounded-lg overflow-auto max-h-[600px]">
                 <Document
-                  // 🟩 Correctly resolves PDF file path for local + hosted
                   file={
                     book.pdfPath.startsWith("http")
                       ? book.pdfPath
-                      : `${BACKEND_URL}${
-                          book.pdfPath.startsWith("/") ? "" : "/"
-                        }${book.pdfPath}`
+                      : `${window.location.origin}${book.pdfPath.startsWith("/") ? "" : "/"}${book.pdfPath}`
                   }
                   onLoadSuccess={onDocumentLoadSuccess}
                   loading="Loading PDF..."
-                  options={{ workerSrc: "/pdf-worker/pdf.worker.js" }}
                 >
-                  {Array.from(new Array(numPages), (el, index) => (
-                    <Page
-                      key={`page_${index + 1}`}
-                      pageNumber={index + 1}
-                      width={600}
-                    />
-                  ))}
+                  {numPages &&
+                    Array.from(new Array(numPages), (_, index) => (
+                      <Page key={`page_${index + 1}`} pageNumber={index + 1} width={600} />
+                    ))}
                 </Document>
               </div>
             </div>
@@ -277,17 +254,13 @@ const BookDetails = () => {
                     onMouseLeave={() => setHoverRating(0)}
                     onClick={() => submitRating(n)}
                     className={`cursor-pointer ${
-                      n <= (hoverRating || Math.round(book.rating || 0))
-                        ? "text-yellow-400"
-                        : "text-gray-400"
+                      n <= (hoverRating || Math.round(book.rating || 0)) ? "text-yellow-400" : "text-gray-400"
                     }`}
                   />
                 ))}
               </div>
             ) : (
-              <p className="text-gray-400 text-sm">
-                You’ve already rated this book.
-              </p>
+              <p className="text-gray-400 text-sm">You’ve already rated this book.</p>
             )}
           </div>
 
@@ -320,15 +293,10 @@ const BookDetails = () => {
               <p className="text-gray-400">No comments yet.</p>
             ) : (
               book.comments.map((c, i) => (
-                <div
-                  key={i}
-                  className="bg-gray-700 p-3 rounded-lg mb-3 text-gray-100"
-                >
+                <div key={i} className="bg-gray-700 p-3 rounded-lg mb-3 text-gray-100">
                   <strong>{c.username || "Anonymous"}</strong>
                   <p>{c.text}</p>
-                  <small className="text-gray-400 block mt-1">
-                    {new Date(c.createdAt).toLocaleString()}
-                  </small>
+                  <small className="text-gray-400 block mt-1">{new Date(c.createdAt).toLocaleString()}</small>
                 </div>
               ))
             )}
