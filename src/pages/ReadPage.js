@@ -25,20 +25,11 @@ const ReadPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // 🔹 Determine backend URL dynamically
-  const BACKEND_URL =
-    process.env.REACT_APP_API_URL ||
-    (window.location.hostname === "localhost"
-      ? "http://localhost:5000"
-      : `https://${window.location.hostname}`);
-
-  console.log("📄 BACKEND_URL:", BACKEND_URL);
-
   // 🔹 Fetch book details dynamically from backend
   useEffect(() => {
     const fetchBook = async () => {
       try {
-        const res = await axios.get(`${BACKEND_URL}/api/books/${id}`, {
+        const res = await axios.get(`/api/books/${id}`, {
           headers: { Authorization: `Bearer ${user?.token}` },
         });
         setBook(res.data);
@@ -51,7 +42,7 @@ const ReadPage = () => {
     };
 
     fetchBook();
-  }, [id, user, BACKEND_URL]);
+  }, [id, user]);
 
   // ✅ Handle PDF page count once loaded
   const onDocumentLoadSuccess = ({ numPages }) => setNumPages(numPages);
@@ -96,14 +87,9 @@ const ReadPage = () => {
       </div>
     );
 
-  // ✅ Build PDF source dynamically — auto detects production vs localhost
-  const pdfSource = book.pdfUrl
-    ? book.pdfUrl.startsWith("http")
-      ? book.pdfUrl
-      : `${BACKEND_URL}${book.pdfUrl.startsWith("/") ? "" : "/"}${book.pdfUrl}`
-    : null;
+  // ✅ Use relative path for PDF source — works for production and localhost
+  const pdfSource = book.pdfUrl || null;
 
-  // 🔹 Log the exact PDF URL the front end is trying to fetch
   console.log("📄 PDF source URL:", pdfSource);
 
   return (
