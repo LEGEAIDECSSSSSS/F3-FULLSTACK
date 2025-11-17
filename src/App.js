@@ -28,7 +28,7 @@ const API_BASE =
 
 // 🏠 HomePage component
 const HomePage = ({ addToLibrary, darkMode, toggleDarkMode }) => {
-  const [booksByGenre, setBooksByGenre] = useState({});
+  const [booksByType, setBooksByType] = useState({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -37,14 +37,15 @@ const HomePage = ({ addToLibrary, darkMode, toggleDarkMode }) => {
         const res = await axios.get(`${API_BASE}/api/books`);
         const books = res.data;
 
-        // Group by genre
+        // Group books by TYPE
         const grouped = books.reduce((acc, book) => {
           const type = book.type || "Others";
           if (!acc[type]) acc[type] = [];
           acc[type].push(book);
           return acc;
         }, {});
-        setBooksByGenre(grouped);
+
+        setBooksByType(grouped);
       } catch (error) {
         console.error("Error fetching books:", error);
       } finally {
@@ -65,11 +66,11 @@ const HomePage = ({ addToLibrary, darkMode, toggleDarkMode }) => {
         {loading ? (
           <p className="text-center py-20">Loading books...</p>
         ) : (
-          Object.keys(booksByGenre).map((genre, i) => (
+          Object.keys(booksByType).map((type, i) => (
             <BookSection
               key={i}
-              title={genre}
-              books={booksByGenre[genre]}
+              title={type}
+              books={booksByType[type]}
               addToLibrary={addToLibrary}
             />
           ))
@@ -124,6 +125,7 @@ function AppContent({ darkMode, toggleDarkMode }) {
             />
           }
         />
+
         <Route
           path="/library"
           element={
@@ -132,6 +134,7 @@ function AppContent({ darkMode, toggleDarkMode }) {
             </ProtectedRoute>
           }
         />
+
         <Route path="/book/:id" element={<BookDetails />} />
         <Route path="/read/:id" element={<ReadPage />} />
         <Route path="/about" element={<AboutPage />} />

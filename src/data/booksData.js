@@ -77,7 +77,7 @@ const booksData = [
         price: 15,
         author: "Rhea Solis",
         genre: "Action / Fantasy",
-        type: "Graphic Novels",
+        type: "Web Novels",
         rating: 4.7,
         synopsis:
           "A fallen knight rises through blood and battle to reclaim her honor in a world ruled by dragons and deceit.",
@@ -89,7 +89,7 @@ const booksData = [
         price: 17,
         author: "Orion Vale",
         genre: "Adventure / Mystery",
-        type: "Graphic Novels",
+        type: "Web Novels",
         rating: 4.4,
         synopsis:
           "A wanderer discovers an ancient path said to lead to paradise — but every step brings him closer to madness.",
@@ -101,7 +101,7 @@ const booksData = [
         price: 20,
         author: "Kai Everen",
         genre: "Fantasy / Epic",
-        type: "Graphic Novels",
+        type: "Web Novels",
         rating: 4.9,
         synopsis:
           "The last ember of a fallen empire burns within a boy destined to ignite a revolution against the gods.",
@@ -113,7 +113,7 @@ const booksData = [
         price: 13,
         author: "Marin Ash",
         genre: "Sci-Fi / Tragedy",
-        type: "Graphic Novels",
+        type: "Web Novels",
         rating: 4.1,
         synopsis:
           "When Earth’s last ship sets sail for the stars, one engineer must decide between duty and love — before time runs out.",
@@ -125,7 +125,7 @@ const booksData = [
         price: 18,
         author: "Ivy Thorn",
         genre: "Fantasy / Romance",
-        type: "Graphic Novels",
+        type: "Web Novels",
         rating: 4.6,
         synopsis:
           "A princess trapped in eternal winter must thaw her heart — and her kingdom — before the ice consumes them both.",
@@ -142,7 +142,7 @@ const booksData = [
         price: 14,
         author: "Juno Reed",
         genre: "Fantasy / Adventure",
-         type: "Web Novels",
+         type: "Graphic Novels",
         rating: 4.4,
         synopsis:
           "A young heir inherits a cursed crown that grants immense power — but slowly erases her memories.",
@@ -154,7 +154,7 @@ const booksData = [
         price: 16,
         author: "Tarek Vale",
         genre: "Action / Supernatural",
-        type: "Web Novels",
+        type: "Graphic Novels",
         rating: 4.5,
         synopsis:
           "Bound to a demonic flame, a reluctant hero becomes the last line of defense against the underworld’s invasion.",
@@ -166,7 +166,7 @@ const booksData = [
         price: 19,
         author: "Lyra Fen",
         genre: "Fantasy / Mystery",
-        type: "Web Novels",
+        type: "Graphic Novels",
         rating: 4.8,
         synopsis:
           "An artist discovers that her paintings open portals to another realm — and something there is painting back.",
@@ -178,7 +178,7 @@ const booksData = [
         price: 15,
         author: "Cassian Holt",
         genre: "Action / Drama",
-        type: "Web Novels",
+        type: "Graphic Novels",
         rating: 4.2,
         synopsis:
           "A disillusioned knight betrays his order and sparks a rebellion that could either save or destroy the realm.",
@@ -190,7 +190,7 @@ const booksData = [
         price: 18,
         author: "Seren Vale",
         genre: "Fantasy / Magic",
-        type: "Web Novels",
+        type: "Graphic Novels",
         rating: 4.7,
         synopsis:
           "In a world where magic is forbidden, the last surviving mage hides among commoners — until destiny calls once more.",

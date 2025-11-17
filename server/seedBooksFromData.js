@@ -35,7 +35,7 @@ const seedBooks = async () => {
         rating: b.rating || 0,
         ratingCount: b.ratingCount || 0,
         comments: [],
-        pdfUrl: b.pdfUrl, // 👈 include PDF URLs here
+        pdfUrl: `${BASE_URL}${b.pdfUrl}`, // 👈 include PDF URLs here
       }))
     );
 

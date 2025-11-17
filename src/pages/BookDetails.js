@@ -1,4 +1,3 @@
-// src/pages/BookDetails.js
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FaStar, FaArrowLeft, FaRegBookmark, FaComments } from "react-icons/fa";
@@ -6,21 +5,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLibrary } from "../context/LibraryContext";
 import { useAuth } from "../context/AuthContext";
 import { io as ioClient } from "socket.io-client";
-
-// ===== PDF.js imports =====
-import { Document, Page, pdfjs } from "react-pdf";
-import "react-pdf/dist/Page/TextLayer.css";
-import "react-pdf/dist/Page/AnnotationLayer.css";
-
-// ✅ Use CDN worker for PDF.js
-pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
-
-// ===== Backend URL =====
-const BACKEND_URL =
-  process.env.REACT_APP_API_URL ||
-  (window.location.hostname === "localhost"
-    ? "http://localhost:5000"
-    : "https://funficfalls-server.onrender.com");
 
 const BookDetails = () => {
   const { id } = useParams();
@@ -34,7 +18,6 @@ const BookDetails = () => {
   const [userRated, setUserRated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [toastMessage, setToastMessage] = useState("");
-  const [numPages, setNumPages] = useState(null);
   const socketRef = useRef(null);
 
   const isAdded = book && library.some((item) => item.id === book._id);
@@ -52,11 +35,11 @@ const BookDetails = () => {
       }
     };
     fetchBook();
-  }, [id, authApi]);
+  }, [id, authApi]); // authApi included to ensure latest instance with token
 
   // ===== Socket.IO real-time updates =====
   useEffect(() => {
-    const socket = ioClient(BACKEND_URL, { withCredentials: true });
+    const socket = ioClient("/", { withCredentials: true });
     socketRef.current = socket;
 
     socket.on(`bookUpdated:${id}`, (update) => {
@@ -120,23 +103,17 @@ const BookDetails = () => {
     }
   };
 
-  // ===== PDF loaded successfully =====
-  const onDocumentLoadSuccess = ({ numPages }) => setNumPages(numPages);
-
   if (loading) return <p className="text-center mt-20 text-gray-500">Loading book...</p>;
   if (!book)
     return (
       <p className="text-center mt-20 text-red-500">
         Book not found.
-        <button onClick={() => navigate(-1)} className="ml-2 underline text-blue-500">
-          Go back
-        </button>
+        <button onClick={() => navigate(-1)} className="ml-2 underline text-blue-500">Go back</button>
       </p>
     );
 
   return (
     <div className="relative min-h-screen py-10 px-6 md:px-20 bg-gray-50 dark:bg-black text-gray-900 dark:text-gray-100">
-      {/* ===== Toast ===== */}
       <AnimatePresence>
         {toastMessage && (
           <motion.div
@@ -151,7 +128,6 @@ const BookDetails = () => {
         )}
       </AnimatePresence>
 
-      {/* ===== Back button ===== */}
       <motion.button
         onClick={() => navigate(-1)}
         whileHover={{ scale: 1.05 }}
@@ -161,13 +137,8 @@ const BookDetails = () => {
       </motion.button>
 
       <div className="grid md:grid-cols-2 gap-10 items-start">
-        {/* ===== Book Cover ===== */}
         <motion.img
-          src={
-            book.img.startsWith("http")
-              ? book.img
-              : `${window.location.origin}${book.img.startsWith("/") ? "" : "/"}${book.img}`
-          }
+          src={book.img.startsWith("http") ? book.img : `${book.img.startsWith("/") ? "" : "/"}${book.img}`}
           alt={book.title}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -175,18 +146,14 @@ const BookDetails = () => {
           className="rounded-2xl shadow-lg w-full h-auto object-cover"
         />
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.2 }}
-        >
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.2 }}>
           <h1 className="text-4xl font-bold mb-3">{book.title}</h1>
           <p className="text-lg text-gray-500 dark:text-gray-400 mb-1">
             by <span className="text-gray-800 dark:text-gray-200">{book.author}</span>
           </p>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{book.genre}</p>
 
-          {/* ===== Rating Display ===== */}
+          {/* Rating */}
           <div className="flex items-center gap-1 mb-5">
             {[...Array(5)].map((_, i) => {
               const filled = i < Math.round(book.rating || 0);
@@ -199,14 +166,9 @@ const BookDetails = () => {
 
           <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-6">{book.synopsis}</p>
 
-          {/* ===== Buttons ===== */}
+          {/* Buttons */}
           <div className="flex flex-wrap gap-4 mb-6">
-            <button
-              onClick={() => navigate(`/read/${book._id}`)}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg"
-            >
-              Read Online
-            </button>
+            <button onClick={() => navigate(`/read/${book._id}`)} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg">Read Online</button>
             <button
               onClick={handleAddToLibrary}
               disabled={!user || isAdded}
@@ -214,34 +176,12 @@ const BookDetails = () => {
                 isAdded ? "bg-green-600 text-white cursor-default" : "bg-gray-800 text-white hover:bg-gray-700"
               }`}
             >
-              <FaRegBookmark /> {isAdded ? "Added to Library ✓" : "Add to Library"}
+              <FaRegBookmark />
+              {isAdded ? "Added to Library ✓" : "Add to Library"}
             </button>
           </div>
 
-          {/* ===== PDF Viewer ===== */}
-          {book.pdfPath && (
-            <div className="mb-8">
-              <h3 className="font-semibold mb-2">Preview PDF</h3>
-              <div className="border rounded-lg overflow-auto max-h-[600px]">
-                <Document
-                  file={
-                    book.pdfPath.startsWith("http")
-                      ? book.pdfPath
-                      : `${window.location.origin}${book.pdfPath.startsWith("/") ? "" : "/"}${book.pdfPath}`
-                  }
-                  onLoadSuccess={onDocumentLoadSuccess}
-                  loading="Loading PDF..."
-                >
-                  {numPages &&
-                    Array.from(new Array(numPages), (_, index) => (
-                      <Page key={`page_${index + 1}`} pageNumber={index + 1} width={600} />
-                    ))}
-                </Document>
-              </div>
-            </div>
-          )}
-
-          {/* ===== Rating Form ===== */}
+          {/* Rating Form */}
           <div className="mb-8 p-4 rounded-lg bg-gray-100 dark:bg-gray-900">
             <h3 className="font-semibold mb-2">Rate this book</h3>
             {!userRated ? (
@@ -253,18 +193,14 @@ const BookDetails = () => {
                     onMouseEnter={() => setHoverRating(n)}
                     onMouseLeave={() => setHoverRating(0)}
                     onClick={() => submitRating(n)}
-                    className={`cursor-pointer ${
-                      n <= (hoverRating || Math.round(book.rating || 0)) ? "text-yellow-400" : "text-gray-400"
-                    }`}
+                    className={`cursor-pointer ${n <= (hoverRating || Math.round(book.rating || 0)) ? "text-yellow-400" : "text-gray-400"}`}
                   />
                 ))}
               </div>
-            ) : (
-              <p className="text-gray-400 text-sm">You’ve already rated this book.</p>
-            )}
+            ) : <p className="text-gray-400 text-sm">You’ve already rated this book.</p>}
           </div>
 
-          {/* ===== Comments ===== */}
+          {/* Comments */}
           <div className="mt-4 p-6 rounded-2xl bg-gray-100 dark:bg-gray-900 shadow-inner">
             <div className="flex items-center gap-2 mb-4 text-indigo-600">
               <FaComments />
