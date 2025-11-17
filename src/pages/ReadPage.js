@@ -7,11 +7,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
 
-// ✅ CSS imports for react-pdf v10+
 import "react-pdf/dist/Page/TextLayer.css";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 
-// ✅ Correct worker setup for pdfjs-dist v5+
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 const ReadPage = () => {
@@ -24,11 +22,12 @@ const ReadPage = () => {
   const [pageNumber, setPageNumber] = useState(1);
   const [loading, setLoading] = useState(true);
 
-  // Determine API base URL dynamically
   const apiBase =
-    process.env.REACT_APP_API_URL || (window.location.hostname === "localhost" ? "http://localhost:5000" : "");
+    process.env.REACT_APP_API_URL ||
+    (window.location.hostname === "localhost"
+      ? "http://localhost:5000"
+      : "https://funficfalls.onrender.com");
 
-  // 🔹 Fetch book data
   useEffect(() => {
     const fetchBook = async () => {
       try {
@@ -45,9 +44,7 @@ const ReadPage = () => {
     fetchBook();
   }, [id, user, apiBase]);
 
-  const onDocumentLoadSuccess = ({ numPages }) => {
-    setNumPages(numPages);
-  };
+  const onDocumentLoadSuccess = ({ numPages }) => setNumPages(numPages);
 
   const nextPage = () => pageNumber < numPages && setPageNumber(pageNumber + 1);
   const prevPage = () => pageNumber > 1 && setPageNumber(pageNumber - 1);
@@ -72,6 +69,13 @@ const ReadPage = () => {
       </div>
     );
 
+  // ✅ Determine PDF URL correctly
+  const pdfFileUrl = book.pdfUrl
+    ? book.pdfUrl.startsWith("http") // Already full URL
+      ? book.pdfUrl
+      : `${apiBase}/uploads/${book.pdfUrl}` // Only prepend if it's a filename
+    : null;
+
   return (
     <motion.div
       className="min-h-screen flex flex-col items-center bg-gray-100 dark:bg-gray-900 py-10"
@@ -83,9 +87,9 @@ const ReadPage = () => {
       </h1>
 
       <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-lg w-[90%] max-w-4xl">
-        {book.pdfUrl ? (
+        {pdfFileUrl ? (
           <Document
-            file={`/${book.pdfUrl}`} // ✅ Relative path ensures same-origin PDF loading
+            file={pdfFileUrl}
             onLoadSuccess={onDocumentLoadSuccess}
             loading={<p>Loading PDF...</p>}
           >
