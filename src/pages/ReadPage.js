@@ -7,7 +7,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
 
-// ✅ Updated CSS imports for react-pdf v10+
+// ✅ CSS imports for react-pdf v10+
 import "react-pdf/dist/Page/TextLayer.css";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 
@@ -24,18 +24,17 @@ const ReadPage = () => {
   const [pageNumber, setPageNumber] = useState(1);
   const [loading, setLoading] = useState(true);
 
-  // 🔹 Fetch book data dynamically from backend
+  // Determine API base URL dynamically
+  const apiBase =
+    process.env.REACT_APP_API_URL || (window.location.hostname === "localhost" ? "http://localhost:5000" : "");
+
+  // 🔹 Fetch book data
   useEffect(() => {
     const fetchBook = async () => {
       try {
-        const res = await axios.get(
-          `${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/books/${id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${user?.token}`,
-            },
-          }
-        );
+        const res = await axios.get(`${apiBase}/api/books/${id}`, {
+          headers: { Authorization: `Bearer ${user?.token}` },
+        });
         setBook(res.data);
       } catch (err) {
         console.error("Error fetching book:", err);
@@ -43,21 +42,15 @@ const ReadPage = () => {
         setLoading(false);
       }
     };
-
     fetchBook();
-  }, [id, user]);
+  }, [id, user, apiBase]);
 
   const onDocumentLoadSuccess = ({ numPages }) => {
     setNumPages(numPages);
   };
 
-  const nextPage = () => {
-    if (pageNumber < numPages) setPageNumber(pageNumber + 1);
-  };
-
-  const prevPage = () => {
-    if (pageNumber > 1) setPageNumber(pageNumber - 1);
-  };
+  const nextPage = () => pageNumber < numPages && setPageNumber(pageNumber + 1);
+  const prevPage = () => pageNumber > 1 && setPageNumber(pageNumber - 1);
 
   if (loading)
     return (
@@ -92,20 +85,14 @@ const ReadPage = () => {
       <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-lg w-[90%] max-w-4xl">
         {book.pdfUrl ? (
           <Document
-            file={book.pdfUrl}
+            file={`/${book.pdfUrl}`} // ✅ Relative path ensures same-origin PDF loading
             onLoadSuccess={onDocumentLoadSuccess}
             loading={<p>Loading PDF...</p>}
           >
-            <Page
-              pageNumber={pageNumber}
-              renderTextLayer={true}
-              renderAnnotationLayer={true}
-            />
+            <Page pageNumber={pageNumber} renderTextLayer renderAnnotationLayer />
           </Document>
         ) : (
-          <p className="text-gray-700 dark:text-gray-300">
-            No PDF available for this book.
-          </p>
+          <p className="text-gray-700 dark:text-gray-300">No PDF available for this book.</p>
         )}
       </div>
 
