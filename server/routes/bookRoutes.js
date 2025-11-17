@@ -12,6 +12,15 @@ export default function (io) {
   const router = express.Router();
 
   /**
+   * Helper to build absolute PDF URL
+   */
+  const getPdfUrl = (pdfPath) => {
+    if (!pdfPath) return null;
+    const baseUrl = process.env.BASE_URL || "http://localhost:5000";
+    return `${baseUrl.replace(/\/$/, "")}/${pdfPath.replace(/^\//, "")}`;
+  };
+
+  /**
    * GET /api/books
    * Fetch all books
    */
@@ -19,13 +28,9 @@ export default function (io) {
     try {
       const books = await Book.find().lean();
 
-      // ✅ Ensure each book's PDF URL is absolute
-      const baseUrl =
-        process.env.BASE_URL || "http://localhost:5000";
-
       const updatedBooks = books.map((book) => {
         if (book.pdfUrl && !book.pdfUrl.startsWith("http")) {
-          book.pdfUrl = `${baseUrl}${book.pdfUrl.startsWith("/") ? "" : "/"}${book.pdfUrl}`;
+          book.pdfUrl = getPdfUrl(book.pdfUrl);
         }
         return book;
       });
@@ -51,12 +56,8 @@ export default function (io) {
       const book = await Book.findById(id).lean();
       if (!book) return res.status(404).json({ message: "Book not found" });
 
-      // ✅ Ensure the single book’s pdfUrl is fully qualified
-      const baseUrl =
-        process.env.BASE_URL || "http://localhost:5000";
-
       if (book.pdfUrl && !book.pdfUrl.startsWith("http")) {
-        book.pdfUrl = `${baseUrl}${book.pdfUrl.startsWith("/") ? "" : "/"}${book.pdfUrl}`;
+        book.pdfUrl = getPdfUrl(book.pdfUrl);
       }
 
       res.json(book);
@@ -90,7 +91,6 @@ export default function (io) {
       book.comments.push(comment);
       await book.save();
 
-      // 🔄 Broadcast comment to sockets
       io.emit(`bookUpdated:${book._id.toString()}`, { type: "comment", comment });
 
       res.status(201).json(comment);
@@ -116,11 +116,9 @@ export default function (io) {
       const book = await Book.findById(req.params.id);
       if (!book) return res.status(404).json({ message: "Book not found" });
 
-      // Initialize ratingCount if missing
       book.ratingCount = book.ratingCount || 0;
       book.rating = book.rating || 0;
 
-      // Update average rating
       book.rating = (book.rating * book.ratingCount + r) / (book.ratingCount + 1);
       book.ratingCount += 1;
 
