@@ -10,7 +10,9 @@ import axios from "axios";
 import "react-pdf/dist/Page/TextLayer.css";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 
-pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${
+  pdfjs.version
+}/build/pdf.worker.min.mjs`;
 
 const ReadPage = () => {
   const { id } = useParams();
@@ -20,6 +22,7 @@ const ReadPage = () => {
   const [book, setBook] = useState(null);
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
+  const [scale, setScale] = useState(1.2); // responsive PDF scaling
   const [loading, setLoading] = useState(true);
 
   const apiBase =
@@ -46,6 +49,19 @@ const ReadPage = () => {
 
   const onDocumentLoadSuccess = ({ numPages }) => setNumPages(numPages);
 
+  // Make PDF responsive
+  useEffect(() => {
+    const updateScale = () => {
+      if (window.innerWidth < 500) setScale(0.9);
+      else if (window.innerWidth < 768) setScale(1);
+      else setScale(1.2);
+    };
+
+    updateScale();
+    window.addEventListener("resize", updateScale);
+    return () => window.removeEventListener("resize", updateScale);
+  }, []);
+
   const nextPage = () => pageNumber < numPages && setPageNumber(pageNumber + 1);
   const prevPage = () => pageNumber > 1 && setPageNumber(pageNumber - 1);
 
@@ -69,55 +85,72 @@ const ReadPage = () => {
       </div>
     );
 
-  // ✅ Determine PDF URL correctly
   const pdfFileUrl = book.pdfUrl
-    ? book.pdfUrl.startsWith("http") // Already full URL
+    ? book.pdfUrl.startsWith("http")
       ? book.pdfUrl
-      : `${apiBase}/uploads/${book.pdfUrl}` // Only prepend if it's a filename
+      : `${apiBase}/uploads/${book.pdfUrl}`
     : null;
 
   return (
     <motion.div
-      className="min-h-screen flex flex-col items-center bg-gray-100 dark:bg-gray-900 py-10"
+      className="min-h-screen flex flex-col items-center bg-gray-100 dark:bg-gray-900 pb-10"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
     >
-      <h1 className="text-2xl font-semibold mb-4 text-gray-800 dark:text-white">
-        {book.title}
-      </h1>
+      {/* === FIXED TOP BAR === */}
+      <div className="w-full sticky top-0 z-20 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md shadow-md py-3 flex items-center px-4">
+        <button
+          onClick={() => navigate(-1)}
+          className="text-gray-800 dark:text-gray-100 hover:opacity-80 mr-3"
+        >
+          <FaArrowLeft size={20} />
+        </button>
+        <h1 className="text-xl font-semibold text-gray-800 dark:text-white truncate">
+          {book.title}
+        </h1>
+      </div>
 
-      <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-lg w-[90%] max-w-4xl">
+      {/* === PDF CONTAINER === */}
+      <div className="mt-6 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-lg w-[95%] max-w-3xl flex justify-center">
         {pdfFileUrl ? (
           <Document
             file={pdfFileUrl}
             onLoadSuccess={onDocumentLoadSuccess}
             loading={<p>Loading PDF...</p>}
           >
-            <Page pageNumber={pageNumber} renderTextLayer renderAnnotationLayer />
+            <Page
+              pageNumber={pageNumber}
+              scale={scale}
+              renderTextLayer={false}
+              renderAnnotationLayer={false}
+            />
           </Document>
         ) : (
-          <p className="text-gray-700 dark:text-gray-300">No PDF available for this book.</p>
+          <p className="text-gray-700 dark:text-gray-300">
+            No PDF available for this book.
+          </p>
         )}
       </div>
 
+      {/* === CONTROLS === */}
       {numPages && (
         <div className="flex items-center justify-center gap-4 mt-6">
           <button
             onClick={prevPage}
             disabled={pageNumber <= 1}
-            className="bg-gray-700 text-white px-4 py-2 rounded-full flex items-center gap-2 hover:bg-gray-600 disabled:opacity-40"
+            className="bg-gray-800 dark:bg-gray-700 text-white px-4 py-2 rounded-full flex items-center gap-2 hover:bg-gray-600 disabled:opacity-30"
           >
             <FaArrowLeft /> Prev
           </button>
 
-          <span className="text-gray-800 dark:text-gray-200">
-            Page {pageNumber} of {numPages}
+          <span className="text-gray-800 dark:text-gray-200 text-lg">
+            {pageNumber} / {numPages}
           </span>
 
           <button
             onClick={nextPage}
             disabled={pageNumber >= numPages}
-            className="bg-gray-700 text-white px-4 py-2 rounded-full flex items-center gap-2 hover:bg-gray-600 disabled:opacity-40"
+            className="bg-gray-800 dark:bg-gray-700 text-white px-4 py-2 rounded-full flex items-center gap-2 hover:bg-gray-600 disabled:opacity-30"
           >
             Next <FaArrowRight />
           </button>
