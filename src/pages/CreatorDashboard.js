@@ -45,21 +45,22 @@ export default function CreatorDashboard() {
 
   return (
     <div className="flex min-h-screen bg-gray-100 dark:bg-black">
-      {/* Sidebar for desktop */}
-      <aside className={`hidden md:flex w-72 bg-white dark:bg-black shadow-xl p-6 flex-col justify-between`}>
+      {/* Desktop Sidebar */}
+      <aside className="hidden md:flex w-72 bg-white dark:bg-black shadow-xl p-6 flex-col justify-between">
         <SidebarContent navigate={navigate} toggleTheme={toggleTheme} darkMode={darkMode} logout={logout} />
       </aside>
 
-      {/* Mobile sidebar overlay */}
-      {sidebarOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-40" onClick={() => setSidebarOpen(false)}></div>
-      )}
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && <div className="fixed inset-0 bg-black bg-opacity-50 z-40" onClick={() => setSidebarOpen(false)}></div>}
+
+      {/* Mobile Sidebar */}
       <aside className={`fixed top-0 left-0 h-full w-64 bg-white dark:bg-black shadow-xl p-6 flex flex-col justify-between z-50 transform transition-transform ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:hidden`}>
         <SidebarContent navigate={navigate} toggleTheme={toggleTheme} darkMode={darkMode} logout={logout} />
       </aside>
 
+      {/* Main Content */}
       <main className="flex-1 p-6 md:p-8 overflow-y-auto">
-        {/* Mobile hamburger */}
+        {/* Mobile Hamburger */}
         <div className="md:hidden mb-4">
           <button onClick={() => setSidebarOpen(true)} className="p-2 bg-gray-200 dark:bg-gray-700 rounded-md">
             <Menu size={24} />
@@ -92,15 +93,12 @@ function SidebarContent({ navigate, toggleTheme, darkMode, logout }) {
         </nav>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-4 mt-4 md:mt-0">
         <button onClick={toggleTheme} className="w-full p-3 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-200 rounded-lg flex items-center justify-center gap-2">
           {darkMode ? <Sun size={18} /> : <Moon size={18} />} {darkMode ? "Light Mode" : "Dark Mode"}
         </button>
 
-        <button
-          onClick={logout}
-          className="w-full p-3 bg-red-600 text-white rounded-lg flex items-center justify-center gap-2 hover:bg-red-700 transition"
-        >
+        <button onClick={logout} className="w-full p-3 bg-red-600 text-white rounded-lg flex items-center justify-center gap-2 hover:bg-red-700 transition">
           <LogOut size={18} /> Logout
         </button>
       </div>
@@ -110,10 +108,7 @@ function SidebarContent({ navigate, toggleTheme, darkMode, logout }) {
 
 function SidebarItem({ icon, label, onClick }) {
   return (
-    <button
-      onClick={onClick}
-      className="w-full flex items-center gap-3 p-3 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition"
-    >
+    <button onClick={onClick} className="w-full flex items-center gap-3 p-3 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition">
       {icon} {label}
     </button>
   );
@@ -122,12 +117,8 @@ function SidebarItem({ icon, label, onClick }) {
 function Header({ user }) {
   return (
     <div className="mb-10">
-      <h1 className="text-4xl font-bold text-gray-800 dark:text-white">
-        Welcome back, {user?.username}
-      </h1>
-      <p className="text-gray-600 dark:text-gray-300 mt-2">
-        Here is your full creator dashboard with everything you need.
-      </p>
+      <h1 className="text-4xl font-bold text-gray-800 dark:text-white">Welcome back, {user?.username}</h1>
+      <p className="text-gray-600 dark:text-gray-300 mt-2">Here is your full creator dashboard with everything you need.</p>
     </div>
   );
 }
@@ -160,15 +151,12 @@ function RecentBooks({ recentBooks, navigate }) {
       ) : (
         <div className="space-y-3">
           {recentBooks.map((b) => (
-            <div key={b._id} className="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl flex justify-between flex-col sm:flex-row">
+            <div key={b._id} className="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl flex flex-col sm:flex-row justify-between">
               <div>
                 <p className="text-lg font-semibold text-gray-900 dark:text-white">{b.title}</p>
                 <p className="text-sm text-gray-600 dark:text-gray-300">{new Date(b.createdAt).toLocaleDateString()}</p>
               </div>
-              <button
-                onClick={() => navigate(`/book/${b._id}`)}
-                className="mt-2 sm:mt-0 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
-              >
+              <button onClick={() => navigate(`/book/${b._id}`)} className="mt-2 sm:mt-0 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">
                 View
               </button>
             </div>
