@@ -1,10 +1,7 @@
-// Full Creator Dashboard with sidebar, analytics, notifications, comments, settings, theme toggle
-// NOTE: This is a full layout skeleton. You will need to hook real API data later.
-
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { Moon, Sun, Bell, BarChart3, MessageSquare, Settings, BookOpen, PlusCircle, LogOut } from "lucide-react";
+import { Moon, Sun, Bell, BarChart3, MessageSquare, Settings, BookOpen, PlusCircle, LogOut, Menu } from "lucide-react";
 import axios from "axios";
 
 export default function CreatorDashboard() {
@@ -16,6 +13,7 @@ export default function CreatorDashboard() {
   const [recentBooks, setRecentBooks] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [comments, setComments] = useState([]);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     setDarkMode(document.documentElement.classList.contains("dark"));
@@ -47,37 +45,27 @@ export default function CreatorDashboard() {
 
   return (
     <div className="flex min-h-screen bg-gray-100 dark:bg-black">
-      {/* Sidebar */}
-      <aside className="w-72 bg-white dark:bg-black shadow-xl p-6 flex flex-col justify-between">
-        <div>
-          <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-8">Creator Panel</h2>
-
-          <nav className="space-y-4">
-            <SidebarItem icon={<PlusCircle />} label="Create New Book" onClick={() => navigate("/create-book")} />
-            <SidebarItem icon={<BookOpen />} label="Manage My Books" onClick={() => navigate("/creator-books")} />
-            <SidebarItem icon={<BarChart3 />} label="Analytics" onClick={() => navigate("/analytics")} />
-            <SidebarItem icon={<MessageSquare />} label="Comments" onClick={() => navigate("/comments")} />
-            <SidebarItem icon={<Bell />} label="Notifications" onClick={() => navigate("/notifications")} />
-            <SidebarItem icon={<Settings />} label="Settings" onClick={() => navigate("/settings")} />
-          </nav>
-        </div>
-
-        <div className="space-y-4">
-          <button onClick={toggleTheme} className="w-full p-3 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-200 rounded-lg flex items-center justify-center gap-2">
-            {darkMode ? <Sun size={18} /> : <Moon size={18} />} {darkMode ? "Light Mode" : "Dark Mode"}
-          </button>
-
-          <button
-            onClick={logout}
-            className="w-full p-3 bg-red-600 text-white rounded-lg flex items-center justify-center gap-2 hover:bg-red-700 transition"
-          >
-            <LogOut size={18} /> Logout
-          </button>
-        </div>
+      {/* Sidebar for desktop */}
+      <aside className={`hidden md:flex w-72 bg-white dark:bg-black shadow-xl p-6 flex-col justify-between`}>
+        <SidebarContent navigate={navigate} toggleTheme={toggleTheme} darkMode={darkMode} logout={logout} />
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 p-8 overflow-y-auto">
+      {/* Mobile sidebar overlay */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-40" onClick={() => setSidebarOpen(false)}></div>
+      )}
+      <aside className={`fixed top-0 left-0 h-full w-64 bg-white dark:bg-black shadow-xl p-6 flex flex-col justify-between z-50 transform transition-transform ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:hidden`}>
+        <SidebarContent navigate={navigate} toggleTheme={toggleTheme} darkMode={darkMode} logout={logout} />
+      </aside>
+
+      <main className="flex-1 p-6 md:p-8 overflow-y-auto">
+        {/* Mobile hamburger */}
+        <div className="md:hidden mb-4">
+          <button onClick={() => setSidebarOpen(true)} className="p-2 bg-gray-200 dark:bg-gray-700 rounded-md">
+            <Menu size={24} />
+          </button>
+        </div>
+
         <Header user={user} />
         <DashboardStats stats={stats} />
         <RecentBooks recentBooks={recentBooks} navigate={navigate} />
@@ -86,6 +74,37 @@ export default function CreatorDashboard() {
         <SettingsPanel />
       </main>
     </div>
+  );
+}
+
+function SidebarContent({ navigate, toggleTheme, darkMode, logout }) {
+  return (
+    <>
+      <div>
+        <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-8">Creator Panel</h2>
+        <nav className="space-y-4">
+          <SidebarItem icon={<PlusCircle />} label="Create New Book" onClick={() => navigate("/create-book")} />
+          <SidebarItem icon={<BookOpen />} label="Manage My Books" onClick={() => navigate("/creator-books")} />
+          <SidebarItem icon={<BarChart3 />} label="Analytics" onClick={() => navigate("/analytics")} />
+          <SidebarItem icon={<MessageSquare />} label="Comments" onClick={() => navigate("/comments")} />
+          <SidebarItem icon={<Bell />} label="Notifications" onClick={() => navigate("/notifications")} />
+          <SidebarItem icon={<Settings />} label="Settings" onClick={() => navigate("/settings")} />
+        </nav>
+      </div>
+
+      <div className="space-y-4">
+        <button onClick={toggleTheme} className="w-full p-3 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-200 rounded-lg flex items-center justify-center gap-2">
+          {darkMode ? <Sun size={18} /> : <Moon size={18} />} {darkMode ? "Light Mode" : "Dark Mode"}
+        </button>
+
+        <button
+          onClick={logout}
+          className="w-full p-3 bg-red-600 text-white rounded-lg flex items-center justify-center gap-2 hover:bg-red-700 transition"
+        >
+          <LogOut size={18} /> Logout
+        </button>
+      </div>
+    </>
   );
 }
 
@@ -113,10 +132,9 @@ function Header({ user }) {
   );
 }
 
-
 function DashboardStats({ stats }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+    <div className="flex flex-wrap gap-6 mb-10">
       <StatCard label="Books" value={stats.books} color="emerald" />
       <StatCard label="Reads" value={stats.totalReads} color="blue" />
       <StatCard label="Likes" value={stats.likes} color="red" />
@@ -126,9 +144,9 @@ function DashboardStats({ stats }) {
 
 function StatCard({ label, value, color }) {
   return (
-    <div className="p-6 bg-white dark:bg-gray-700 rounded-xl shadow-lg">
+    <div className="flex-1 min-w-[120px] p-4 md:p-6 bg-white dark:bg-gray-700 rounded-xl shadow-lg">
       <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200">{label}</h3>
-      <p className={`text-4xl font-bold text-${color}-600 mt-2`}>{value}</p>
+      <p className={`text-2xl md:text-4xl font-bold text-${color}-600 mt-2`}>{value}</p>
     </div>
   );
 }
@@ -142,14 +160,14 @@ function RecentBooks({ recentBooks, navigate }) {
       ) : (
         <div className="space-y-3">
           {recentBooks.map((b) => (
-            <div key={b._id} className="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl flex justify-between">
+            <div key={b._id} className="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl flex justify-between flex-col sm:flex-row">
               <div>
                 <p className="text-lg font-semibold text-gray-900 dark:text-white">{b.title}</p>
                 <p className="text-sm text-gray-600 dark:text-gray-300">{new Date(b.createdAt).toLocaleDateString()}</p>
               </div>
               <button
                 onClick={() => navigate(`/book/${b._id}`)}
-                className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+                className="mt-2 sm:mt-0 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
               >
                 View
               </button>
