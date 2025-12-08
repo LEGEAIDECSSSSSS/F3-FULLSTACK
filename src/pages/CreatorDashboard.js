@@ -46,9 +46,9 @@ export default function CreatorDashboard() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="flex min-h-screen bg-gray-100 dark:bg-black">
       {/* Sidebar */}
-      <aside className="w-72 bg-white dark:bg-gray-800 shadow-xl p-6 flex flex-col justify-between">
+      <aside className="w-72 bg-white dark:bg-black shadow-xl p-6 flex flex-col justify-between">
         <div>
           <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-8">Creator Panel</h2>
 
@@ -126,7 +126,7 @@ function DashboardStats({ stats }) {
 
 function StatCard({ label, value, color }) {
   return (
-    <div className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg">
+    <div className="p-6 bg-white dark:bg-gray-700 rounded-xl shadow-lg">
       <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200">{label}</h3>
       <p className={`text-4xl font-bold text-${color}-600 mt-2`}>{value}</p>
     </div>
@@ -135,7 +135,7 @@ function StatCard({ label, value, color }) {
 
 function RecentBooks({ recentBooks, navigate }) {
   return (
-    <section className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg mb-10">
+    <section className="bg-white dark:bg-gray-700 p-6 rounded-2xl shadow-lg mb-10">
       <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">Recently Added Books</h2>
       {recentBooks.length === 0 ? (
         <p className="text-gray-500 dark:text-gray-400">No books uploaded yet.</p>
@@ -163,7 +163,7 @@ function RecentBooks({ recentBooks, navigate }) {
 
 function NotificationsPanel({ notifications }) {
   return (
-    <section className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg mb-10">
+    <section className="bg-white dark:bg-gray-700 p-6 rounded-2xl shadow-lg mb-10">
       <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">Notifications</h2>
       {notifications.length === 0 ? (
         <p className="text-gray-500 dark:text-gray-400">No new notifications.</p>
@@ -180,7 +180,7 @@ function NotificationsPanel({ notifications }) {
 
 function CommentsPanel({ comments }) {
   return (
-    <section className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg mb-10">
+    <section className="bg-white dark:bg-gray-700 p-6 rounded-2xl shadow-lg mb-10">
       <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">Recent Comments</h2>
       {comments.length === 0 ? (
         <p className="text-gray-500 dark:text-gray-400">No comments yet.</p>
@@ -200,7 +200,7 @@ function CommentsPanel({ comments }) {
 
 function SettingsPanel() {
   return (
-    <section className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg mb-10">
+    <section className="bg-white dark:bg-gray-700 p-6 rounded-2xl shadow-lg mb-10">
       <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">Settings</h2>
       <p className="text-gray-600 dark:text-gray-300">Profile settings, password change, and more can go here.</p>
     </section>
