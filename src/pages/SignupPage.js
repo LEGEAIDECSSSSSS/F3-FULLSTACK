@@ -5,10 +5,10 @@ export default function Signup() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("reader"); // ⭐ NEW
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // ✅ Base API URL (works both locally and on Render)
   const API_BASE_URL =
     process.env.REACT_APP_API_URL || "http://localhost:5000";
 
@@ -20,7 +20,7 @@ export default function Signup() {
       const res = await fetch(`${API_BASE_URL}/api/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, email, password }),
+        body: JSON.stringify({ username, email, password, role }), // ⭐ SEND ROLE
       });
 
       const data = await res.json();
@@ -76,6 +76,16 @@ export default function Signup() {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
+
+        {/* ⭐ ROLE DROPDOWN */}
+        <select
+          value={role}
+          onChange={(e) => setRole(e.target.value)}
+          className="w-full mb-6 p-3 border rounded-lg dark:bg-gray-700 dark:text-white"
+        >
+          <option value="reader">Reader</option>
+          <option value="creator">Creator</option>
+        </select>
 
         <button
           type="submit"

@@ -19,6 +19,7 @@ import BookDetails from "./pages/BookDetails";
 import ReadPage from "./pages/ReadPage";
 import { LibraryProvider, useLibrary } from "./context/LibraryContext";
 import axios from "axios";
+import CreatorDashboard from "./pages/CreatorDashboard";
 
 const API_BASE =
   process.env.REACT_APP_API_URL?.trim() ||
@@ -115,32 +116,44 @@ function AppContent({ darkMode, toggleDarkMode }) {
       }`}
     >
       <Routes>
-        <Route
-          path="/"
-          element={
-            <HomePage
-              addToLibrary={addToLibrary}
-              darkMode={darkMode}
-              toggleDarkMode={toggleDarkMode}
-            />
-          }
-        />
+  <Route
+    path="/"
+    element={
+      <HomePage
+        addToLibrary={addToLibrary}
+        darkMode={darkMode}
+        toggleDarkMode={toggleDarkMode}
+      />
+    }
+  />
 
-        <Route
-          path="/library"
-          element={
-            <ProtectedRoute>
-              <LibraryPage />
-            </ProtectedRoute>
-          }
-        />
+  {/* Reader Library Page */}
+  <Route
+    path="/library"
+    element={
+      <ProtectedRoute>
+        <LibraryPage />
+      </ProtectedRoute>
+    }
+  />
 
-        <Route path="/book/:id" element={<BookDetails />} />
-        <Route path="/read/:id" element={<ReadPage />} />
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-      </Routes>
+  {/* Creator Dashboard */}
+  <Route
+    path="/creator-dashboard"
+    element={
+      <ProtectedRoute role="creator">
+        <CreatorDashboard />
+      </ProtectedRoute>
+    }
+  />
+
+  <Route path="/book/:id" element={<BookDetails />} />
+  <Route path="/read/:id" element={<ReadPage />} />
+  <Route path="/about" element={<AboutPage />} />
+  <Route path="/login" element={<LoginPage />} />
+  <Route path="/signup" element={<SignupPage />} />
+</Routes>
+
     </div>
   );
 }

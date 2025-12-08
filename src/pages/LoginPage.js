@@ -1,23 +1,31 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext"; // ✅ Import your AuthContext
+import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
-  const { login } = useAuth(); // ✅ Access the login function from context
+  const { login, user } = useAuth(); // ⭐ get user too
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    const result = await login(email, password); // ✅ Use context-based login
+    const result = await login(email, password);
 
-    if (result.success) {
-      alert("✅ Login successful!");
-      navigate("/"); // Go back to home
+if (result.success) {
+  alert("✅ Login successful!");
+  const role = result.user.role;
+
+  if (role === "creator") {
+    navigate("/creator-dashboard");
+  } else {
+    navigate("/");
+  }
+
     } else {
       alert(result.message || "❌ Login failed. Try again.");
     }

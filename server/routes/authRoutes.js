@@ -7,20 +7,44 @@ const router = express.Router();
 
 // Signup route
 router.post("/signup", async (req, res) => {
-  const { username, email, password } = req.body;
+  const { username, email, password, role } = req.body;
+
   try {
     const existingUser = await User.findOne({ email });
-    if (existingUser) return res.status(400).json({ message: "User already exists" });
+    if (existingUser)
+      return res.status(400).json({ message: "User already exists" });
+
+    // Prevent users from giving themselves admin
+    const assignedRole = role === "creator" ? "creator" : "reader";
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ username, email, password: hashedPassword });
+    const newUser = new User({
+      username,
+      email,
+      password: hashedPassword,
+      role: assignedRole,
+    });
     await newUser.save();
 
-    res.status(201).json({ message: "User created successfully" });
+    // Create access token
+    const accessToken = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, { expiresIn: "15m" });
+
+    res.status(201).json({
+      message: "User created successfully",
+      accessToken,
+      user: {
+        id: newUser._id,
+        username: newUser.username,
+        email: newUser.email,
+        role: newUser.role,   // ✅ now role is sent to frontend
+      },
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
+
+
 
 // Login route
 router.post("/login", async (req, res) => {
@@ -47,9 +71,14 @@ router.post("/login", async (req, res) => {
     });
 
     res.json({
-      accessToken,
-      user: { id: user._id, username: user.username, email: user.email },
-    });
+  accessToken,
+  user: {
+    id: user._id,
+    username: user.username,
+    email: user.email,
+    role: user.role,   // <— ADD THIS
+  },
+});
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

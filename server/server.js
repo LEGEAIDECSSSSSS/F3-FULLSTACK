@@ -52,15 +52,20 @@ const allowedOrigins = [
 ];
 app.use(
   cors({
-    origin(origin, callback) {
-      if (!origin || allowedOrigins.includes(origin) || origin.endsWith(".onrender.com")) {
-        callback(null, true);
-      } else {
-        console.warn("❌ Blocked by CORS:", origin);
-        callback(new Error("CORS not allowed for this origin"));
+    origin: (origin, callback) => {
+      // Allow requests from tools like Postman (no origin)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin) || origin.endsWith(".onrender.com")) {
+        return callback(null, true);
       }
+
+      console.warn("❌ Blocked by CORS:", origin);
+      return callback(new Error("CORS not allowed for this origin"));
     },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 

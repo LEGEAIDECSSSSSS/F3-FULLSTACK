@@ -62,27 +62,31 @@ export const AuthProvider = ({ children }) => {
   );
 
   // ===== Login =====
-  const login = async (email, password) => {
-    try {
-      const res = await fetch(`${API_BASE}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ email, password }),
-      });
+const login = async (email, password) => {
+  try {
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ email, password }),
+    });
 
-      const data = await res.json();
-      if (!res.ok) return { success: false, message: data.message || "Login failed" };
+    const data = await res.json();
+    if (!res.ok)
+      return { success: false, message: data.message || "Login failed" };
 
-      setUser(data.user);
-      setAccessToken(data.accessToken);
+    // Update user and token in context
+    setUser({ ...data.user, role: data.user.role });
+    setAccessToken(data.accessToken);
 
-      return { success: true };
-    } catch (err) {
-      console.error("Login error:", err);
-      return { success: false, message: "Something went wrong" };
-    }
-  };
+    // ⭐ return user so Login.jsx can see the role IMMEDIATELY
+    return { success: true, user: data.user };
+  } catch (err) {
+    console.error("Login error:", err);
+    return { success: false, message: "Something went wrong" };
+  }
+};
+
 
   // ===== Logout =====
   const logout = async () => {
@@ -100,24 +104,25 @@ export const AuthProvider = ({ children }) => {
   };
 
   // ===== Signup =====
-  const signup = async (username, email, password) => {
-    try {
-      const res = await fetch(`${API_BASE}/auth/signup`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ username, email, password }),
-      });
+  const signup = async (username, email, password, role) => {
+  try {
+    const res = await fetch(`${API_BASE}/auth/signup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ username, email, password, role }),
+    });
 
-      const data = await res.json();
-      if (!res.ok) return { success: false, message: data.message || "Signup failed" };
+    const data = await res.json();
+    if (!res.ok) return { success: false, message: data.message || "Signup failed" };
 
-      return { success: true, message: "Signup successful" };
-    } catch (err) {
-      console.error("Signup error:", err);
-      return { success: false, message: "Something went wrong" };
-    }
-  };
+    return { success: true, message: "Signup successful" };
+  } catch (err) {
+    console.error("Signup error:", err);
+    return { success: false, message: "Something went wrong" };
+  }
+};
+
 
   // ===== Refresh access token =====
   const refreshAccessToken = async () => {
@@ -150,7 +155,7 @@ export const AuthProvider = ({ children }) => {
         logout,
         signup,
         refreshAccessToken,
-        authApi, // Use this in components like BookDetails
+        authApi,
       }}
     >
       {children}
