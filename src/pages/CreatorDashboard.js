@@ -134,13 +134,21 @@ function DashboardStats({ stats }) {
 }
 
 function StatCard({ label, value, color }) {
+  // Map colors to Tailwind classes
+  const colorClasses = {
+    emerald: "text-emerald-600",
+    blue: "text-blue-600",
+    red: "text-red-600",
+  };
+
   return (
     <div className="flex-1 min-w-[120px] p-4 md:p-6 bg-white dark:bg-gray-700 rounded-xl shadow-lg">
       <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200">{label}</h3>
-      <p className={`text-2xl md:text-4xl font-bold text-${color}-600 mt-2`}>{value}</p>
+      <p className={`text-2xl md:text-4xl font-bold mt-2 ${colorClasses[color]}`}>{value}</p>
     </div>
   );
 }
+
 
 function RecentBooks({ recentBooks, navigate }) {
   return (
