@@ -8,7 +8,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
-  const { login, user } = useAuth(); // ⭐ get user too
+  const { login} = useAuth(); // ⭐ get user too
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -21,7 +21,7 @@ if (result.success) {
   const role = result.user.role;
 
   if (role === "creator") {
-    navigate("/creator-dashboard");
+    navigate("/");
   } else {
     navigate("/");
   }

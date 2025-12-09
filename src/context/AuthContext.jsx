@@ -76,7 +76,7 @@ const login = async (email, password) => {
       return { success: false, message: data.message || "Login failed" };
 
     // Update user and token in context
-    setUser({ ...data.user, role: data.user.role });
+    setUser({ ...data.user });
     setAccessToken(data.accessToken);
 
     // ⭐ return user so Login.jsx can see the role IMMEDIATELY
@@ -104,13 +104,13 @@ const login = async (email, password) => {
   };
 
   // ===== Signup =====
-  const signup = async (username, email, password, role) => {
+  const signup = async (username, email, password) => {
   try {
     const res = await fetch(`${API_BASE}/auth/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ username, email, password, role }),
+      body: JSON.stringify({ username, email, password}),
     });
 
     const data = await res.json();
