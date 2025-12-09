@@ -109,10 +109,10 @@ export default function Navbar() {
             <li role="none">
               <Link
                 role="menuitem"
-                to="/shop"
+                to="/creator-dashboard"
                 className="hover:text-indigo-500 transition px-1"
               >
-                Shop
+                Create
               </Link>
             </li>
             <li role="none">
@@ -260,11 +260,11 @@ export default function Navbar() {
             </li>
             <li>
               <Link
-                to="/shop"
+                to="/creator-dashboard"
                 onClick={toggleMenu}
                 className="block text-gray-800 dark:text-gray-200 hover:text-indigo-600 transition"
               >
-                Shop
+                Create
               </Link>
             </li>
             <li>

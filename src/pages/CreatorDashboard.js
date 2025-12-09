@@ -1,7 +1,19 @@
+import Navbar from "../components/Navbar"; // ✅ Import Navbar
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { Moon, Sun, Bell, BarChart3, MessageSquare, Settings, BookOpen, PlusCircle, LogOut, Menu } from "lucide-react";
+import {
+  Moon,
+  Sun,
+  Bell,
+  BarChart3,
+  MessageSquare,
+  Settings,
+  BookOpen,
+  PlusCircle,
+  LogOut,
+  Menu,
+} from "lucide-react";
 import axios from "axios";
 
 export default function CreatorDashboard() {
@@ -35,6 +47,7 @@ export default function CreatorDashboard() {
         console.log("Using placeholder data");
       }
     };
+
     fetchData();
   }, []);
 
@@ -44,61 +57,143 @@ export default function CreatorDashboard() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-100 dark:bg-black">
-      {/* Desktop Sidebar */}
-      <aside className="hidden md:flex w-72 bg-white dark:bg-black shadow-xl p-6 flex-col justify-between">
-        <SidebarContent navigate={navigate} toggleTheme={toggleTheme} darkMode={darkMode} logout={logout} />
-      </aside>
+    <div className="flex min-h-screen bg-gray-100 dark:bg-black flex-col">
+      
+      {/* ==================== NAVBAR AT THE TOP ==================== */}
+      <Navbar />
 
-      {/* Mobile Sidebar Overlay */}
-      {sidebarOpen && <div className="fixed inset-0 bg-black bg-opacity-50 z-40" onClick={() => setSidebarOpen(false)}></div>}
+      <div className="flex flex-1">
+        {/* ==================== DESKTOP SIDEBAR ==================== */}
+        <aside className="hidden md:flex w-72 bg-white dark:bg-black shadow-xl p-6 flex-col justify-between">
+          <SidebarContent
+            navigate={navigate}
+            toggleTheme={toggleTheme}
+            darkMode={darkMode}
+            logout={logout}
+          />
+        </aside>
 
-      {/* Mobile Sidebar */}
-      <aside className={`fixed top-0 left-0 h-full w-64 bg-white dark:bg-black shadow-xl p-6 flex flex-col justify-between z-50 transform transition-transform ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:hidden`}>
-        <SidebarContent navigate={navigate} toggleTheme={toggleTheme} darkMode={darkMode} logout={logout} />
-      </aside>
+        {/* ================== MOBILE SIDEBAR OVERLAY ================== */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 z-40"
+            onClick={() => setSidebarOpen(false)}
+          ></div>
+        )}
 
-      {/* Main Content */}
-      <main className="flex-1 p-6 md:p-8 overflow-y-auto">
-        {/* Mobile Hamburger */}
-        <div className="md:hidden mb-4">
-          <button onClick={() => setSidebarOpen(true)} className="p-2 bg-gray-200 dark:bg-gray-700 rounded-md">
-            <Menu size={24} />
-          </button>
-        </div>
+        {/* ==================== MOBILE SIDEBAR ===================== */}
+        <aside
+          className={`fixed top-0 left-0 h-full w-64 bg-white dark:bg-black shadow-xl p-6 flex flex-col justify-between z-50 transform transition-transform ${
+            sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          } md:hidden`}
+        >
+          <SidebarContent
+            navigate={navigate}
+            toggleTheme={toggleTheme}
+            darkMode={darkMode}
+            logout={logout}
+          />
+        </aside>
 
-        <Header user={user} />
-        <DashboardStats stats={stats} />
-        <RecentBooks recentBooks={recentBooks} navigate={navigate} />
-        <NotificationsPanel notifications={notifications} />
-        <CommentsPanel comments={comments} />
-        <SettingsPanel />
-      </main>
+        {/* ======================== MAIN CONTENT ======================== */}
+        <main className="flex-1 p-6 md:p-8 overflow-y-auto">
+
+          {/* ======================== TOP BRAND HEADER ======================== */}
+          <div className="flex items-center justify-between mb-8">
+
+            {/* Logo + Site Name */}
+            <div className="flex items-center gap-3">
+              <img
+                src="../Images/LOGO LIGHT 1.png"
+                alt="FFF Logo"
+                className="w-10 h-10 object-contain"
+              />
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                Fun Fiction & Fallacies
+              </h1>
+            </div>
+
+            {/* Mobile Only Hamburger */}
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="md:hidden p-2 bg-gray-200 dark:bg-gray-700 rounded-md"
+            >
+              <Menu size={26} className="text-gray-900 dark:text-white" />
+            </button>
+          </div>
+
+          {/* ======================== DASHBOARD CONTENT ======================== */}
+          <Header user={user} />
+          <DashboardStats stats={stats} />
+          <RecentBooks recentBooks={recentBooks} navigate={navigate} />
+          <NotificationsPanel notifications={notifications} />
+          <CommentsPanel comments={comments} />
+          <SettingsPanel />
+        </main>
+      </div>
     </div>
   );
 }
 
+/* ===========================================================
+   SIDEBAR CONTENT
+   =========================================================== */
 function SidebarContent({ navigate, toggleTheme, darkMode, logout }) {
   return (
     <>
       <div>
-        <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-8">Creator Panel</h2>
+        <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-8">
+          Creator Panel
+        </h2>
         <nav className="space-y-4">
-          <SidebarItem icon={<PlusCircle />} label="Create New Book" onClick={() => navigate("/create-book")} />
-          <SidebarItem icon={<BookOpen />} label="Manage My Books" onClick={() => navigate("/creator-books")} />
-          <SidebarItem icon={<BarChart3 />} label="Analytics" onClick={() => navigate("/analytics")} />
-          <SidebarItem icon={<MessageSquare />} label="Comments" onClick={() => navigate("/comments")} />
-          <SidebarItem icon={<Bell />} label="Notifications" onClick={() => navigate("/notifications")} />
-          <SidebarItem icon={<Settings />} label="Settings" onClick={() => navigate("/settings")} />
+          <SidebarItem
+            icon={<PlusCircle />}
+            label="Create New Book"
+            onClick={() => navigate("/create-book")}
+          />
+          <SidebarItem
+            icon={<BookOpen />}
+            label="Manage My Books"
+            onClick={() => navigate("/creator-books")}
+          />
+          <SidebarItem
+            icon={<BarChart3 />}
+            label="Analytics"
+            onClick={() => navigate("/analytics")}
+          />
+          <SidebarItem
+            icon={<MessageSquare />}
+            label="Comments"
+            onClick={() => navigate("/comments")}
+          />
+          <SidebarItem
+            icon={<Bell />}
+            label="Notifications"
+            onClick={() => navigate("/notifications")}
+          />
+          <SidebarItem
+            icon={<Settings />}
+            label="Settings"
+            onClick={() => navigate("/settings")}
+          />
         </nav>
       </div>
 
-      <div className="space-y-4 mt-4 md:mt-0">
-        <button onClick={toggleTheme} className="w-full p-3 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-200 rounded-lg flex items-center justify-center gap-2">
-          {darkMode ? <Sun size={18} /> : <Moon size={18} />} {darkMode ? "Light Mode" : "Dark Mode"}
+      <div className="space-y-4 mt-10">
+        {/* THEME BUTTON */}
+        <button
+          onClick={toggleTheme}
+          className="w-full p-3 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-200 rounded-lg flex items-center justify-center gap-2"
+        >
+          {darkMode ? <Sun size={18} /> : <Moon size={18} />}{" "}
+          {darkMode ? "Light Mode" : "Dark Mode"}
         </button>
 
-        <button onClick={logout} className="w-full p-3 bg-red-600 text-white rounded-lg flex items-center justify-center gap-2 hover:bg-red-700 transition">
+        {/* LOGOUT */}
+        <button
+          onClick={logout}
+          className="w-full p-3 bg-red-600 text-white rounded-lg flex items-center justify-center gap-2 hover:bg-red-700 transition"
+        >
           <LogOut size={18} /> Logout
         </button>
       </div>
@@ -108,21 +203,34 @@ function SidebarContent({ navigate, toggleTheme, darkMode, logout }) {
 
 function SidebarItem({ icon, label, onClick }) {
   return (
-    <button onClick={onClick} className="w-full flex items-center gap-3 p-3 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+    <button
+      onClick={onClick}
+      className="w-full flex items-center gap-3 p-3 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition"
+    >
       {icon} {label}
     </button>
   );
 }
 
+/* ===========================================================
+   TOP HEADER
+   =========================================================== */
 function Header({ user }) {
   return (
     <div className="mb-10">
-      <h1 className="text-4xl font-bold text-gray-800 dark:text-white">Welcome back, {user?.username}</h1>
-      <p className="text-gray-600 dark:text-gray-300 mt-2">Here is your full creator dashboard with everything you need.</p>
+      <h1 className="text-4xl font-bold text-gray-800 dark:text-white">
+        Welcome back, {user?.username}
+      </h1>
+      <p className="text-gray-600 dark:text-gray-300 mt-2">
+        Here is your full creator dashboard with everything you need.
+      </p>
     </div>
   );
 }
 
+/* ===========================================================
+   STAT CARDS
+   =========================================================== */
 function DashboardStats({ stats }) {
   return (
     <div className="flex flex-wrap gap-6 mb-10">
@@ -134,37 +242,56 @@ function DashboardStats({ stats }) {
 }
 
 function StatCard({ label, value, color }) {
-  // Map colors to Tailwind classes
-  const colorClasses = {
+  const colors = {
     emerald: "text-emerald-600",
     blue: "text-blue-600",
     red: "text-red-600",
   };
 
   return (
-    <div className="flex-1 min-w-[120px] p-4 md:p-6 bg-white dark:bg-gray-700 rounded-xl shadow-lg">
-      <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200">{label}</h3>
-      <p className={`text-2xl md:text-4xl font-bold mt-2 ${colorClasses[color]}`}>{value}</p>
+    <div className="flex-1 min-w-[150px] p-6 bg-white dark:bg-gray-700 rounded-xl shadow-lg">
+      <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200">
+        {label}
+      </h3>
+      <p className={`text-3xl md:text-4xl font-bold mt-2 ${colors[color]}`}>
+        {value}
+      </p>
     </div>
   );
 }
 
-
+/* ===========================================================
+   RECENT BOOKS
+   =========================================================== */
 function RecentBooks({ recentBooks, navigate }) {
   return (
     <section className="bg-white dark:bg-gray-700 p-6 rounded-2xl shadow-lg mb-10">
-      <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">Recently Added Books</h2>
+      <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
+        Recently Added Books
+      </h2>
+
       {recentBooks.length === 0 ? (
         <p className="text-gray-500 dark:text-gray-400">No books uploaded yet.</p>
       ) : (
         <div className="space-y-3">
           {recentBooks.map((b) => (
-            <div key={b._id} className="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl flex flex-col sm:flex-row justify-between">
+            <div
+              key={b._id}
+              className="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl flex flex-col sm:flex-row justify-between"
+            >
               <div>
-                <p className="text-lg font-semibold text-gray-900 dark:text-white">{b.title}</p>
-                <p className="text-sm text-gray-600 dark:text-gray-300">{new Date(b.createdAt).toLocaleDateString()}</p>
+                <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                  {b.title}
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  {new Date(b.createdAt).toLocaleDateString()}
+                </p>
               </div>
-              <button onClick={() => navigate(`/book/${b._id}`)} className="mt-2 sm:mt-0 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">
+
+              <button
+                onClick={() => navigate(`/book/${b._id}`)}
+                className="mt-2 sm:mt-0 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+              >
                 View
               </button>
             </div>
@@ -175,16 +302,24 @@ function RecentBooks({ recentBooks, navigate }) {
   );
 }
 
+/* ===========================================================
+   NOTIFICATIONS
+   =========================================================== */
 function NotificationsPanel({ notifications }) {
   return (
     <section className="bg-white dark:bg-gray-700 p-6 rounded-2xl shadow-lg mb-10">
-      <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">Notifications</h2>
+      <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
+        Notifications
+      </h2>
+
       {notifications.length === 0 ? (
         <p className="text-gray-500 dark:text-gray-400">No new notifications.</p>
       ) : (
         <ul className="space-y-3">
           {notifications.map((n, i) => (
-            <li key={i} className="p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">{n.message}</li>
+            <li key={i} className="p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
+              {n.message}
+            </li>
           ))}
         </ul>
       )}
@@ -192,10 +327,16 @@ function NotificationsPanel({ notifications }) {
   );
 }
 
+/* ===========================================================
+   COMMENTS
+   =========================================================== */
 function CommentsPanel({ comments }) {
   return (
     <section className="bg-white dark:bg-gray-700 p-6 rounded-2xl shadow-lg mb-10">
-      <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">Recent Comments</h2>
+      <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
+        Recent Comments
+      </h2>
+
       {comments.length === 0 ? (
         <p className="text-gray-500 dark:text-gray-400">No comments yet.</p>
       ) : (
@@ -212,11 +353,18 @@ function CommentsPanel({ comments }) {
   );
 }
 
+/* ===========================================================
+   SETTINGS PANEL
+   =========================================================== */
 function SettingsPanel() {
   return (
     <section className="bg-white dark:bg-gray-700 p-6 rounded-2xl shadow-lg mb-10">
-      <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">Settings</h2>
-      <p className="text-gray-600 dark:text-gray-300">Profile settings, password change, and more can go here.</p>
+      <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
+        Settings
+      </h2>
+      <p className="text-gray-600 dark:text-gray-300">
+        Profile settings, password change, and more can go here.
+      </p>
     </section>
   );
 }
