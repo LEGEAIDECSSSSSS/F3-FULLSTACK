@@ -143,6 +143,29 @@ const login = async (email, password) => {
     }
   };
 
+  // ===== Library: Fetch books =====
+const fetchLibrary = async () => {
+  try {
+    const res = await authApi.get("/library");
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching library:", err);
+    throw new Error("Failed to fetch library");
+  }
+};
+
+// ===== Library: Add book =====
+const addToLibrary = async (bookId) => {
+  try {
+    const res = await authApi.post("/library/add", { bookId });
+    return res.data;
+  } catch (err) {
+    console.error("Error adding book:", err);
+    throw new Error("Failed to add book");
+  }
+};
+
+
   // ===== Helper to use axios with auto-refresh =====
   const authApi = api;
 
@@ -156,6 +179,8 @@ const login = async (email, password) => {
         signup,
         refreshAccessToken,
         authApi,
+        fetchLibrary,
+        addToLibrary,
       }}
     >
       {children}
