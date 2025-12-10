@@ -1,4 +1,4 @@
-import Navbar from "../components/Navbar"; // ✅ Import Navbar
+import Navbar from "../components/Navbar";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -11,360 +11,124 @@ import {
   Settings,
   BookOpen,
   PlusCircle,
-  LogOut,
-  Menu,
 } from "lucide-react";
 import axios from "axios";
 
 export default function CreatorDashboard() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
-
   const [darkMode, setDarkMode] = useState(false);
   const [stats, setStats] = useState({ books: 0, totalReads: 0, likes: 0 });
   const [recentBooks, setRecentBooks] = useState([]);
-  const [notifications, setNotifications] = useState([]);
-  const [comments, setComments] = useState([]);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     setDarkMode(document.documentElement.classList.contains("dark"));
 
     const fetchData = async () => {
       try {
-        const res = await axios.get("/api/creator/stats");
-        setStats(res.data);
+        const statsRes = await axios.get("/api/creator/stats");
+        setStats(statsRes.data);
 
         const booksRes = await axios.get("/api/creator/recent-books");
         setRecentBooks(booksRes.data);
-
-        const notifRes = await axios.get("/api/creator/notifications");
-        setNotifications(notifRes.data);
-
-        const commentsRes = await axios.get("/api/creator/comments");
-        setComments(commentsRes.data);
       } catch {
         console.log("Using placeholder data");
       }
     };
-
     fetchData();
   }, []);
 
-  const toggleTheme = () => {
-    document.documentElement.classList.toggle("dark");
-    setDarkMode(!darkMode);
-  };
+  const tiles = [
+    { icon: <BookOpen size={28} />, label: "Manage My Books", onClick: () => navigate("/creator-books") },
+    { icon: <BarChart3 size={28} />, label: "Analytics", onClick: () => navigate("/analytics") },
+    { icon: <MessageSquare size={28} />, label: "Comments", onClick: () => navigate("/comments") },
+    { icon: <Bell size={28} />, label: "Notifications", onClick: () => navigate("/notifications") },
+    { icon: <Settings size={28} />, label: "Settings", onClick: () => navigate("/settings") },
+  ];
+
+  const statsTiles = [
+    { label: "Books", value: stats.books },
+    { label: "Reads", value: stats.totalReads },
+    { label: "Likes", value: stats.likes },
+  ];
 
   return (
-    <div className="flex min-h-screen bg-gray-100 dark:bg-black flex-col">
-      
-      {/* ==================== NAVBAR AT THE TOP ==================== */}
+    <div className="flex flex-col min-h-screen bg-gray-100 dark:bg-black">
       <Navbar />
 
-      <div className="flex flex-1">
-        {/* ==================== DESKTOP SIDEBAR ==================== */}
-        <aside className="hidden md:flex w-72 bg-white dark:bg-black shadow-xl p-6 flex-col justify-between">
-          <SidebarContent
-            navigate={navigate}
-            toggleTheme={toggleTheme}
-            darkMode={darkMode}
-            logout={logout}
-          />
-        </aside>
+      <main className="flex-1 pt-28 md:pt-32 px-4 md:px-10">
+        {/* CENTRALIZED PAGE HEADING */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-extrabold text-gray-800 dark:text-white">
+            Creator Dashboard
+          </h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-2">
+            Welcome back, {user?.username} — manage your books and stats here.
+          </p>
+        </div>
 
-        {/* ================== MOBILE SIDEBAR OVERLAY ================== */}
-        {sidebarOpen && (
-          <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-40"
-            onClick={() => setSidebarOpen(false)}
-          ></div>
-        )}
-
-        {/* ==================== MOBILE SIDEBAR ===================== */}
-        <aside
-          className={`fixed top-0 left-0 h-full w-64 bg-white dark:bg-black shadow-xl p-6 flex flex-col justify-between z-50 transform transition-transform ${
-            sidebarOpen ? "translate-x-0" : "-translate-x-full"
-          } md:hidden`}
+        {/* CREATE BOOK BIG TILE */}
+        <div
+          onClick={() => navigate("/create-book")}
+          className="cursor-pointer mb-6 p-8 sm:p-10 md:p-12 bg-transparent border-2 border-gray-400 dark:border-gray-600 text-gray-800 dark:text-white shadow-xl flex items-center justify-center text-2xl sm:text-3xl md:text-4xl font-bold hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+          style={{ borderRadius: 0, minHeight: "150px" }}
         >
-          <SidebarContent
-            navigate={navigate}
-            toggleTheme={toggleTheme}
-            darkMode={darkMode}
-            logout={logout}
-          />
-        </aside>
+          <PlusCircle size={44} className="mr-4 sm:mr-6" />
+          Create New Book
+        </div>
 
-        {/* ======================== MAIN CONTENT ======================== */}
-        <main className="flex-1 p-6 md:p-8 overflow-y-auto">
-
-          {/* ======================== TOP BRAND HEADER ======================== */}
-          <div className="flex items-center justify-between mb-8">
-
-            {/* Logo + Site Name */}
-            <div className="flex items-center gap-3">
-              <img
-                src="../Images/LOGO LIGHT 1.png"
-                alt="FFF Logo"
-                className="w-10 h-10 object-contain"
-              />
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                Fun Fiction & Fallacies
-              </h1>
-            </div>
-
-            {/* Mobile Only Hamburger */}
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="md:hidden p-2 bg-gray-200 dark:bg-gray-700 rounded-md"
-            >
-              <Menu size={26} className="text-gray-900 dark:text-white" />
-            </button>
-          </div>
-
-          {/* ======================== DASHBOARD CONTENT ======================== */}
-          <Header user={user} />
-          <DashboardStats stats={stats} />
-          <RecentBooks recentBooks={recentBooks} navigate={navigate} />
-          <NotificationsPanel notifications={notifications} />
-          <CommentsPanel comments={comments} />
-          <SettingsPanel />
-        </main>
-      </div>
-    </div>
-  );
-}
-
-/* ===========================================================
-   SIDEBAR CONTENT
-   =========================================================== */
-function SidebarContent({ navigate, toggleTheme, darkMode, logout }) {
-  return (
-    <>
-      <div>
-        <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-8">
-          Creator Panel
-        </h2>
-        <nav className="space-y-4">
-          <SidebarItem
-            icon={<PlusCircle />}
-            label="Create New Book"
-            onClick={() => navigate("/create-book")}
-          />
-          <SidebarItem
-            icon={<BookOpen />}
-            label="Manage My Books"
-            onClick={() => navigate("/creator-books")}
-          />
-          <SidebarItem
-            icon={<BarChart3 />}
-            label="Analytics"
-            onClick={() => navigate("/analytics")}
-          />
-          <SidebarItem
-            icon={<MessageSquare />}
-            label="Comments"
-            onClick={() => navigate("/comments")}
-          />
-          <SidebarItem
-            icon={<Bell />}
-            label="Notifications"
-            onClick={() => navigate("/notifications")}
-          />
-          <SidebarItem
-            icon={<Settings />}
-            label="Settings"
-            onClick={() => navigate("/settings")}
-          />
-        </nav>
-      </div>
-
-      <div className="space-y-4 mt-10">
-        {/* THEME BUTTON */}
-        <button
-          onClick={toggleTheme}
-          className="w-full p-3 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-200 rounded-lg flex items-center justify-center gap-2"
-        >
-          {darkMode ? <Sun size={18} /> : <Moon size={18} />}{" "}
-          {darkMode ? "Light Mode" : "Dark Mode"}
-        </button>
-
-        {/* LOGOUT */}
-        <button
-          onClick={logout}
-          className="w-full p-3 bg-red-600 text-white rounded-lg flex items-center justify-center gap-2 hover:bg-red-700 transition"
-        >
-          <LogOut size={18} /> Logout
-        </button>
-      </div>
-    </>
-  );
-}
-
-function SidebarItem({ icon, label, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className="w-full flex items-center gap-3 p-3 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition"
-    >
-      {icon} {label}
-    </button>
-  );
-}
-
-/* ===========================================================
-   TOP HEADER
-   =========================================================== */
-function Header({ user }) {
-  return (
-    <div className="mb-10">
-      <h1 className="text-4xl font-bold text-gray-800 dark:text-white">
-        Welcome back, {user?.username}
-      </h1>
-      <p className="text-gray-600 dark:text-gray-300 mt-2">
-        Here is your full creator dashboard with everything you need.
-      </p>
-    </div>
-  );
-}
-
-/* ===========================================================
-   STAT CARDS
-   =========================================================== */
-function DashboardStats({ stats }) {
-  return (
-    <div className="flex flex-wrap gap-6 mb-10">
-      <StatCard label="Books" value={stats.books} color="emerald" />
-      <StatCard label="Reads" value={stats.totalReads} color="blue" />
-      <StatCard label="Likes" value={stats.likes} color="red" />
-    </div>
-  );
-}
-
-function StatCard({ label, value, color }) {
-  const colors = {
-    emerald: "text-emerald-600",
-    blue: "text-blue-600",
-    red: "text-red-600",
-  };
-
-  return (
-    <div className="flex-1 min-w-[150px] p-6 bg-white dark:bg-gray-700 rounded-xl shadow-lg">
-      <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200">
-        {label}
-      </h3>
-      <p className={`text-3xl md:text-4xl font-bold mt-2 ${colors[color]}`}>
-        {value}
-      </p>
-    </div>
-  );
-}
-
-/* ===========================================================
-   RECENT BOOKS
-   =========================================================== */
-function RecentBooks({ recentBooks, navigate }) {
-  return (
-    <section className="bg-white dark:bg-gray-700 p-6 rounded-2xl shadow-lg mb-10">
-      <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
-        Recently Added Books
-      </h2>
-
-      {recentBooks.length === 0 ? (
-        <p className="text-gray-500 dark:text-gray-400">No books uploaded yet.</p>
-      ) : (
-        <div className="space-y-3">
-          {recentBooks.map((b) => (
+        {/* STATS TILES */}
+        <div className="grid grid-cols-3 sm:grid-cols-3 gap-4 md:gap-6 mb-8">
+          {statsTiles.map((stat, idx) => (
             <div
-              key={b._id}
-              className="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl flex flex-col sm:flex-row justify-between"
+              key={idx}
+              className="p-6 sm:p-8 bg-white dark:bg-gray-700 shadow-lg flex flex-col items-center justify-center text-center rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-600 transition"
             >
-              <div>
-                <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {b.title}
-                </p>
-                <p className="text-sm text-gray-600 dark:text-gray-300">
-                  {new Date(b.createdAt).toLocaleDateString()}
-                </p>
-              </div>
-
-              <button
-                onClick={() => navigate(`/book/${b._id}`)}
-                className="mt-2 sm:mt-0 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
-              >
-                View
-              </button>
+              <span className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{stat.value}</span>
+              <span className="text-gray-700 dark:text-gray-300 mt-2 text-lg">{stat.label}</span>
             </div>
           ))}
         </div>
-      )}
-    </section>
-  );
-}
 
-/* ===========================================================
-   NOTIFICATIONS
-   =========================================================== */
-function NotificationsPanel({ notifications }) {
-  return (
-    <section className="bg-white dark:bg-gray-700 p-6 rounded-2xl shadow-lg mb-10">
-      <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
-        Notifications
-      </h2>
-
-      {notifications.length === 0 ? (
-        <p className="text-gray-500 dark:text-gray-400">No new notifications.</p>
-      ) : (
-        <ul className="space-y-3">
-          {notifications.map((n, i) => (
-            <li key={i} className="p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
-              {n.message}
-            </li>
+        {/* OTHER TILES */}
+        <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6 mb-8">
+          {tiles.map((tile, idx) => (
+            <div
+              key={idx}
+              onClick={tile.onClick}
+              className="cursor-pointer p-6 sm:p-8 md:p-10 bg-white dark:bg-gray-700 rounded-2xl shadow-lg flex flex-col items-center justify-center gap-3 hover:bg-gray-100 dark:hover:bg-gray-600 transition"
+            >
+              <div className="text-gray-800 dark:text-white">{tile.icon}</div>
+              <span className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">{tile.label}</span>
+            </div>
           ))}
-        </ul>
-      )}
-    </section>
-  );
-}
+        </div>
 
-/* ===========================================================
-   COMMENTS
-   =========================================================== */
-function CommentsPanel({ comments }) {
-  return (
-    <section className="bg-white dark:bg-gray-700 p-6 rounded-2xl shadow-lg mb-10">
-      <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
-        Recent Comments
-      </h2>
-
-      {comments.length === 0 ? (
-        <p className="text-gray-500 dark:text-gray-400">No comments yet.</p>
-      ) : (
-        <ul className="space-y-4">
-          {comments.map((c, i) => (
-            <li key={i} className="bg-gray-50 dark:bg-gray-700 p-4 rounded-xl">
-              <p className="font-semibold text-gray-900 dark:text-white">{c.username}</p>
-              <p className="text-gray-700 dark:text-gray-300 text-sm mt-1">{c.comment}</p>
-            </li>
-          ))}
-        </ul>
-      )}
-    </section>
-  );
-}
-
-/* ===========================================================
-   SETTINGS PANEL
-   =========================================================== */
-function SettingsPanel() {
-  return (
-    <section className="bg-white dark:bg-gray-700 p-6 rounded-2xl shadow-lg mb-10">
-      <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
-        Settings
-      </h2>
-      <p className="text-gray-600 dark:text-gray-300">
-        Profile settings, password change, and more can go here.
-      </p>
-    </section>
+        {/* RECENT BOOKS */}
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">
+            Recently Added Books
+          </h2>
+          {recentBooks.length === 0 ? (
+            <p className="text-gray-500 dark:text-gray-400">No books uploaded yet.</p>
+          ) : (
+            <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
+              {recentBooks.map((b) => (
+                <div
+                  key={b._id}
+                  onClick={() => navigate(`/book/${b._id}`)}
+                  className="cursor-pointer p-4 sm:p-6 bg-white dark:bg-gray-700 rounded-2xl shadow-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition"
+                >
+                  <h3 className="font-bold text-gray-900 dark:text-white">{b.title}</h3>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm mt-1">
+                    {new Date(b.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
+    </div>
   );
 }
