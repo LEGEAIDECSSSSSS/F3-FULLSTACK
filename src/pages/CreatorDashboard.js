@@ -60,10 +60,28 @@ export default function CreatorDashboard() {
 
       <main className="flex-1 pt-28 md:pt-32 px-4 md:px-10">
         {/* CENTRAL HEADER */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-extrabold text-gray-800 dark:text-white">Creator Dashboard</h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-2">Welcome back, {user?.username} — manage your books and stats here.</p>
-        </div>
+{/* CENTRAL HEADER */}
+<div className="text-center mb-8">
+  <h1 className="text-5xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-500 via-pink-500 to-yellow-400 tracking-wide animate-text-gradient">
+    Creator Dashboard
+  </h1>
+  <p className="mt-3 text-lg md:text-xl text-gray-600 dark:text-gray-300 italic pulsate">
+    Welcome back, <span className="font-semibold text-gray-800 dark:text-white">{user?.username}</span> — manage your books and stats here.
+  </p>
+
+  {/* Inline keyframes for pulsate */}
+  <style jsx>{`
+    .pulsate {
+      animation: pulsate 2.5s ease-in-out infinite;
+    }
+    @keyframes pulsate {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+  `}</style>
+</div>
+
+
 
        {/* CANVAS TILE */}
 <div
