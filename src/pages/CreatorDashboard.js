@@ -1,4 +1,5 @@
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -60,8 +61,7 @@ export default function CreatorDashboard() {
 
       <main className="flex-1 pt-28 md:pt-32 px-4 md:px-10">
         {/* CENTRAL HEADER */}
-{/* CENTRAL HEADER */}
-<div className="text-center mb-8">
+        <div className="text-center mb-8">
   <h1 className="text-5xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-500 via-pink-500 to-yellow-400 tracking-wide animate-text-gradient">
     Creator Dashboard
   </h1>
@@ -81,21 +81,11 @@ export default function CreatorDashboard() {
   `}</style>
 </div>
 
-
-
-       {/* CANVAS TILE */}
-<div
-  onClick={() => navigate("/create-book")}
-  className="
-    cursor-pointer w-full mb-10 
-    px-6 sm:px-10 md:px-14 
-    bg-transparent border-2 border-black dark:border-gray-600 
-    text-gray-800 dark:text-white 
-    shadow-xl flex flex-col items-center justify-center text-center 
-    hover:bg-gray-50 dark:hover:bg-gray-800 transition
-    py-10 sm:py-14
-  "
-  style={{ borderRadius: 0, minHeight: "45vh" }}
+        {/* CANVAS TILE */}
+        <div 
+          onClick={() => navigate("/create-chapter")}
+     className="cursor-pointer w-full mb-10 px-6 sm:px-10 md:px-14  bg-transparent border-2 border-black dark:border-gray-600  text-gray-800 dark:text-white  shadow-xl flex flex-col items-center justify-center text-center  hover:bg-gray-50 dark:hover:bg-gray-800 transition py-10 sm:py-14 "
+     style={{ borderRadius: 0, minHeight: "45vh" }}
 >
   <PlusCircle size={60} className="mb-6" />
 
@@ -109,8 +99,7 @@ export default function CreatorDashboard() {
     Start writing inside our clean, canvas-style editor. Build your book chapter
     by chapter with powerful formatting tools.
   </p>
-</div>
-
+        </div>
 
         {/* STATS */}
         <div className="grid grid-cols-3 gap-4 md:gap-6 mb-10">
@@ -125,65 +114,32 @@ export default function CreatorDashboard() {
           ))}
         </div>
 
-<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4 sm:gap-6 mb-12">
-  {tiles.map((tile, idx) => {
-    const isLast = idx === tiles.length - 1;
-
-    return (
-      <div
-        key={idx}
-        onClick={tile.onClick}
-        className={`
-          cursor-pointer h-36 sm:h-40 rounded-2xl shadow-lg flex flex-col items-center justify-center gap-3 
-          bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition
-          ${isLast
-            ? `
-              col-span-full
-              sm:col-span-1
-              mx-auto
-              w-2/3 sm:w-full
-              lg:col-start-2
-            `
-            : "w-full"
-          }
-        `}
-      >
-        {/* FIXED ICON ALIGNMENT */}
-        <div className="flex items-center justify-center h-10 w-10 text-gray-800 dark:text-white">
-          {tile.icon}
-        </div>
-
-        <span className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
-          {tile.label}
-        </span>
-      </div>
-    );
-  })}
-</div>
-
-
-
-
-        {/* RECENT BOOKS */}
-        <div>
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">Recently Added Books</h2>
-          {recentBooks.length === 0 ? (
-            <p className="text-gray-500 dark:text-gray-400">No books uploaded yet.</p>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
-              {recentBooks.map((b) => (
-                <div
-                  key={b._id}
-                  onClick={() => navigate(`/book/${b._id}`)}
-                  className="cursor-pointer p-4 sm:p-6 bg-white dark:bg-gray-700 rounded-2xl shadow-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition"
-                >
-                  <h3 className="font-bold text-gray-900 dark:text-white">{b.title}</h3>
-                  <p className="text-gray-600 dark:text-gray-300 text-sm mt-1">{new Date(b.createdAt).toLocaleDateString()}</p>
+        {/* QUICK ACTION TILES */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4 sm:gap-6 mb-12">
+          {tiles.map((tile, idx) => {
+            const isLast = idx === tiles.length - 1;
+            return (
+              <div
+                key={idx}
+                onClick={tile.onClick}
+                className={`
+                  cursor-pointer h-36 sm:h-40 rounded-2xl shadow-lg flex flex-col items-center justify-center gap-3 
+                  bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition
+                  ${isLast ? "col-span-full sm:col-span-1 mx-auto w-2/3 sm:w-full lg:col-start-2" : "w-full"}
+                `}
+              >
+                <div className="flex items-center justify-center h-10 w-10 text-gray-800 dark:text-white">
+                  {tile.icon}
                 </div>
-              ))}
-            </div>
-          )}
+                <span className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
+                  {tile.label}
+                </span>
+              </div>
+            );
+          })}
         </div>
+
+        <Footer />
       </main>
     </div>
   );
