@@ -14,101 +14,99 @@ export default function CreateChapter() {
     const html = editor.getHTML();
     console.log("Chapter Title:", chapterTitle);
     console.log("Content:", html);
-    alert("Chapter saved (check console)");
+    alert("Chapter saved.");
   };
 
   if (!editor) return null;
 
   return (
-    <div className="w-full min-h-screen px-6 sm:px-10 md:px-20 lg:px-32 py-10">
-      {/* PAGE TITLE */}
-      <h1 className="text-3xl font-bold mb-6 text-gray-900 dark:text-white">
-        Create New Chapter
+    <div className="min-h-screen w-full flex flex-col items-center px-4 py-10 bg-gradient-to-b from-gray-100 to-gray-200 dark:from-gray-900 dark:to-black">
+
+      {/* Hero Heading */}
+      <h1 className="text-4xl sm:text-5xl font-extrabold mb-3 text-center text-gray-900 dark:text-white tracking-tight">
+        Canvas
       </h1>
+      <p className="text-center text-gray-600 dark:text-gray-300 mb-10 max-w-xl">
+        Start writing inside our clean, canvas-style editor. Build your book chapter by chapter with powerful formatting tools.
+      </p>
 
-      {/* TITLE INPUT */}
-      <input
-        type="text"
-        placeholder="Chapter title..."
-        value={chapterTitle}
-        onChange={(e) => setChapterTitle(e.target.value)}
-        className="w-full mb-6 p-3 rounded-xl border border-gray-300 dark:border-gray-700 
-                   bg-white dark:bg-gray-800 text-gray-900 dark:text-white 
-                   focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
-      />
+      {/* White Card */}
+      <div className="w-full max-w-4xl bg-white dark:bg-gray-900 shadow-xl rounded-3xl p-8 border border-gray-200 dark:border-gray-700 transition-all">
 
-      {/* TOOLBAR */}
-      <div className="flex gap-3 mb-4 bg-gray-200 dark:bg-gray-700 p-3 rounded-xl">
+        {/* Title Input */}
+        <input
+          type="text"
+          placeholder="Enter chapter title..."
+          value={chapterTitle}
+          onChange={(e) => setChapterTitle(e.target.value)}
+          className="w-full mb-6 p-4 rounded-2xl bg-gray-100 dark:bg-gray-800 border border-gray-300 
+                     dark:border-gray-700 text-gray-900 dark:text-white text-xl font-semibold 
+                     focus:outline-none focus:ring-4 focus:ring-black/20 dark:focus:ring-white/20 transition-all"
+        />
 
-        {/* Bold */}
-        <button
-          onClick={() => editor.chain().focus().toggleBold().run()}
-          className={`px-3 py-1 rounded-lg ${
-            editor.isActive("bold")
-              ? "bg-black text-white"
-              : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-          }`}
-        >
-          B
-        </button>
+        {/* Floating Toolbar */}
+        <div className="backdrop-blur-xl bg-white/70 dark:bg-black/40 shadow-lg border border-gray-300 dark:border-gray-700 
+                        rounded-2xl px-4 py-2 flex items-center gap-3 sticky top-4 z-20 mb-4">
 
-        {/* Italic */}
-        <button
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-          className={`px-3 py-1 rounded-lg ${
-            editor.isActive("italic")
-              ? "bg-black text-white"
-              : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-          }`}
-        >
-          I
-        </button>
+          {/* Tool Button Component */}
+          {[
+            { label: "B", action: () => editor.chain().focus().toggleBold().run(), active: editor.isActive("bold") },
+            { label: "I", action: () => editor.chain().focus().toggleItalic().run(), active: editor.isActive("italic") },
+            {
+              label: "H2",
+              action: () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
+              active: editor.isActive("heading", { level: 2 }),
+            },
+          ].map((btn, i) => (
+            <button
+              key={i}
+              onClick={btn.action}
+              className={`px-3 py-1.5 text-sm rounded-xl transition-all font-semibold
+                ${btn.active
+                  ? "bg-black text-white dark:bg-white dark:text-black shadow"
+                  : "bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700"
+                }`}
+            >
+              {btn.label}
+            </button>
+          ))}
 
-        {/* Heading */}
-        <button
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          className={`px-3 py-1 rounded-lg ${
-            editor.isActive("heading", { level: 2 })
-              ? "bg-black text-white"
-              : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-          }`}
-        >
-          H2
-        </button>
+          {/* Undo */}
+          <button
+            onClick={() => editor.chain().focus().undo().run()}
+            className="px-3 py-1.5 text-sm rounded-xl bg-gray-200 dark:bg-gray-800 text-gray-700 
+                       dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700 transition-all"
+          >
+            Undo
+          </button>
 
-        {/* Undo */}
-        <button
-          onClick={() => editor.chain().focus().undo().run()}
-          className="px-3 py-1 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-        >
-          Undo
-        </button>
+          {/* Redo */}
+          <button
+            onClick={() => editor.chain().focus().redo().run()}
+            className="px-3 py-1.5 text-sm rounded-xl bg-gray-200 dark:bg-gray-800 text-gray-700 
+                       dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700 transition-all"
+          >
+            Redo
+          </button>
+        </div>
 
-        {/* Redo */}
-        <button
-          onClick={() => editor.chain().focus().redo().run()}
-          className="px-3 py-1 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-        >
-          Redo
-        </button>
+        {/* Writing Canvas */}
+        <div className="min-h-[400px] p-6 rounded-3xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white 
+                        shadow-inner border border-gray-300 dark:border-gray-700 prose dark:prose-invert max-w-none">
+          <EditorContent editor={editor} />
+        </div>
+
+        {/* Save Button */}
+        <div className="flex justify-end mt-6">
+          <button
+            onClick={handleSave}
+            className="px-8 py-3 bg-black dark:bg-white text-white dark:text-black rounded-2xl font-semibold
+                       shadow-md hover:shadow-xl transition-all"
+          >
+            Save Chapter
+          </button>
+        </div>
       </div>
-
-      {/* EDITOR */}
-      <div
-        className="border border-gray-300 dark:border-gray-700 rounded-xl min-h-[300px] 
-                   p-4 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-      >
-        <EditorContent editor={editor} />
-      </div>
-
-      {/* SAVE BUTTON */}
-      <button
-        onClick={handleSave}
-        className="mt-6 bg-black text-white px-6 py-3 rounded-xl shadow-md 
-                   hover:bg-gray-800 transition-all"
-      >
-        Save Chapter
-      </button>
     </div>
   );
 }
