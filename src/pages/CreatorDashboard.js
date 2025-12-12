@@ -62,24 +62,23 @@ export default function CreatorDashboard() {
       <main className="flex-1 pt-28 md:pt-32 px-4 md:px-10">
         {/* CENTRAL HEADER */}
         <div className="text-center mb-8">
-  <h1 className="text-5xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-500 via-pink-500 to-yellow-400 tracking-wide animate-text-gradient">
-    Creator Dashboard
-  </h1>
-  <p className="mt-3 text-lg md:text-xl text-gray-600 dark:text-gray-300 italic pulsate">
-    Welcome back, <span className="font-semibold text-gray-800 dark:text-white">{user?.username}</span> — manage your books and stats here.
-  </p>
+          <h1 className="text-5xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-500 via-pink-500 to-yellow-400 tracking-wide animate-text-gradient">
+            Creator Dashboard
+          </h1>
+          <p className="mt-3 text-lg md:text-xl text-gray-600 dark:text-gray-300 italic pulsate">
+            Welcome back, <span className="font-semibold text-gray-800 dark:text-white">{user?.username}</span>
+          </p>
 
-  {/* Inline keyframes for pulsate */}
-  <style jsx>{`
-    .pulsate {
-      animation: pulsate 2.5s ease-in-out infinite;
-    }
-    @keyframes pulsate {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.7; }
-    }
-  `}</style>
-</div>
+          <style jsx>{`
+            .pulsate {
+              animation: pulsate 2.5s ease-in-out infinite;
+            }
+            @keyframes pulsate {
+              0%, 100% { opacity: 1; }
+              50% { opacity: 0.7; }
+            }
+          `}</style>
+        </div>
 
         {/* CANVAS TILE */}
         <div 
@@ -114,30 +113,33 @@ export default function CreatorDashboard() {
           ))}
         </div>
 
-        {/* QUICK ACTION TILES */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4 sm:gap-6 mb-12">
-          {tiles.map((tile, idx) => {
-            const isLast = idx === tiles.length - 1;
-            return (
-              <div
-                key={idx}
-                onClick={tile.onClick}
-                className={`
-                  cursor-pointer h-36 sm:h-40 rounded-2xl shadow-lg flex flex-col items-center justify-center gap-3 
-                  bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition
-                  ${isLast ? "col-span-full sm:col-span-1 mx-auto w-2/3 sm:w-full lg:col-start-2" : "w-full"}
-                `}
-              >
-                <div className="flex items-center justify-center h-10 w-10 text-gray-800 dark:text-white">
-                  {tile.icon}
-                </div>
-                <span className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
-                  {tile.label}
-                </span>
-              </div>
-            );
-          })}
+       {/* QUICK ACTION TILES */}
+<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4 sm:gap-6 mb-12">
+  {tiles.map((tile, idx) => {
+    const isLast = idx === tiles.length - 1;
+    return (
+      <div
+        key={idx}
+        onClick={tile.onClick}
+        className={`
+          cursor-pointer h-36 sm:h-40 rounded-2xl shadow-lg flex flex-col items-center justify-center gap-3
+          bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition
+          ${isLast ? "col-span-full sm:col-span-1 mx-auto w-2/3 sm:w-full lg:col-start-2" : "w-full"}
+        `}
+      >
+        <div className="flex items-center justify-center h-10 w-10 text-gray-800 dark:text-white">
+          {tile.icon}
         </div>
+
+        {/* FIXED RESPONSIVE LABEL */}
+        <span className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 dark:text-white">
+          {tile.label}
+        </span>
+      </div>
+    );
+  })}
+</div>
+
 
         <Footer />
       </main>
