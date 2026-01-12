@@ -1,57 +1,44 @@
-import { createContext, useContext, useState, useEffect } from "react";
+// src/context/LibraryContext.jsx
+import { createContext, useContext, useEffect, useState } from "react";
+import { useAuth } from "./AuthContext";
 
 const LibraryContext = createContext();
 
 export const LibraryProvider = ({ children }) => {
+  const { authApi, accessToken } = useAuth();
   const [library, setLibrary] = useState([]);
   const [loading, setLoading] = useState(true);
-  const token = localStorage.getItem("token");
 
-  const API_BASE_URL =
-    process.env.REACT_APP_API_URL || "http://localhost:5000";
-
-  // ✅ Helper: Normalize image URLs safely (for both frontend & backend sources)
+  // Helper: normalize image URLs safely
   const resolveImgUrl = (img) => {
     if (!img) return "/images/default-cover.jpg";
-
-    // Already a full URL (e.g. http://localhost:3000/images/bg_dark.jpg or external link)
     if (/^https?:\/\//i.test(img)) return img;
-
-    // Already points to /images/... → keep as-is
     if (img.startsWith("/images/")) return img;
-
-    // Just a filename → build path from /images/
     return `/images/${img}`;
   };
 
-  // ✅ Fetch user library
+  // Map backend book data → frontend book data (use 'img' field)
+  const mapBookData = (books) =>
+    (books || []).map((b) => ({
+      ...b,
+      img: resolveImgUrl(b.img), // <-- use 'img' from backend
+    }));
+
+  // Fetch library whenever accessToken changes
   useEffect(() => {
     const fetchLibrary = async () => {
-      if (!token) {
+      if (!accessToken) {
         setLibrary([]);
         setLoading(false);
         return;
       }
 
+      setLoading(true);
       try {
-        const res = await fetch(`${API_BASE_URL}/api/library`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!res.ok) throw new Error("Failed to fetch library");
-
-        const data = await res.json();
-
-        const updatedBooks = (data.books || []).map((book) => ({
-          ...book,
-          img: resolveImgUrl(book.img),
-        }));
-
-        setLibrary(updatedBooks);
-      } catch (error) {
-        console.error("Error fetching library:", error);
+        const res = await authApi.get("/library");
+        setLibrary(mapBookData(res.data.books));
+      } catch (err) {
+        console.error("Error fetching library:", err);
         setLibrary([]);
       } finally {
         setLoading(false);
@@ -59,77 +46,51 @@ export const LibraryProvider = ({ children }) => {
     };
 
     fetchLibrary();
-  }, [token, API_BASE_URL]);
+  }, [accessToken, authApi]);
 
-  // ✅ Add book to library
+  // Add a book to library
   const addToLibrary = async (book) => {
-    if (!token) {
-      alert("Please log in to add books to your library.");
+    if (!accessToken) {
+      alert("Please log in to add books.");
       return;
     }
 
     try {
-      const cleanImg = resolveImgUrl(book.img);
+      // Send the book to backend exactly as it expects
+      const res = await authApi.post("/library/add", { book });
 
-      const res = await fetch(`${API_BASE_URL}/api/library/add`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          book: { ...book, img: cleanImg },
-        }),
-      });
-
-      if (!res.ok) throw new Error("Failed to add book");
-
-      const data = await res.json();
-
-      const updatedBooks = (data.books || []).map((b) => ({
-        ...b,
-        img: resolveImgUrl(b.img),
-      }));
-
-      setLibrary(updatedBooks);
-    } catch (error) {
-      console.error("Error adding book:", error);
+      // Update local library state
+      setLibrary(mapBookData(res.data.books));
+    } catch (err) {
+      console.error("Error adding book:", err);
+      alert(err.response?.data?.message || "Failed to add book.");
     }
   };
 
-  // ✅ Remove book from library
+  // Remove a book from library
   const removeFromLibrary = async (id) => {
-    if (!token) {
+    if (!accessToken) {
       alert("Please log in to remove books.");
       return;
     }
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/library/remove/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!res.ok) throw new Error("Failed to remove book");
-
-      const data = await res.json();
-
-      const updatedBooks = (data.books || []).map((b) => ({
-        ...b,
-        img: resolveImgUrl(b.img),
-      }));
-
-      setLibrary(updatedBooks);
-    } catch (error) {
-      console.error("Error removing book:", error);
+      const res = await authApi.delete(`/library/remove/${id}`);
+      setLibrary(mapBookData(res.data.books));
+    } catch (err) {
+      console.error("Error removing book:", err);
+      alert(err.response?.data?.message || "Failed to remove book.");
     }
   };
 
   return (
     <LibraryContext.Provider
-      value={{ library, addToLibrary, removeFromLibrary, loading }}
+      value={{
+        library,
+        loading,
+        addToLibrary,
+        removeFromLibrary,
+      }}
     >
       {children}
     </LibraryContext.Provider>

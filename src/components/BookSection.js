@@ -103,15 +103,17 @@ const BookSection = ({ title, books = [] }) => {
 
                     {/* Add to Library */}
                     <button
-                      onClick={() => {
-                        if (!isAdded) {
-                          addToLibrary({
-                            _id: realId,
-                            title: book.title,
-                            img: imgSrc,
-                          });
-                        }
-                      }}
+                     onClick={() => {
+  if (!isAdded) {
+    addToLibrary({
+      id: realId,          // change from _id
+      title: book.title,
+      author: book.author || "",  // optional, fallback to empty string
+      cover: imgSrc || "/images/default-cover.jpg" // rename img → cover
+    });
+  }
+}}
+
                       disabled={isAdded}
                       className={`px-2 py-1 text-[10px] sm:px-3 sm:py-1.5 sm:text-sm rounded-lg whitespace-nowrap transition-all duration-300 ${
                         isAdded

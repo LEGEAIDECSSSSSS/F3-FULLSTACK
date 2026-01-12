@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
@@ -17,7 +16,7 @@ import Footer from "./components/Footer";
 import LibraryPage from "./pages/LibraryPage";
 import BookDetails from "./pages/BookDetails";
 import ReadPage from "./pages/ReadPage";
-import { LibraryProvider, useLibrary } from "./context/LibraryContext";
+import {useLibrary } from "./context/LibraryContext";
 import axios from "axios";
 import CreatorDashboard from "./pages/CreatorDashboard";
 import CreateChapter from "./pages/CreateChapter";
@@ -97,13 +96,12 @@ function App() {
   };
 
   return (
-    <LibraryProvider>
-      <AuthProvider>
         <Router>
-          <AppContent darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+          <AppContent
+            darkMode={darkMode}
+            toggleDarkMode={toggleDarkMode}
+          />
         </Router>
-      </AuthProvider>
-    </LibraryProvider>
   );
 }
 

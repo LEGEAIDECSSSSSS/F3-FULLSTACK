@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
+import { AuthProvider } from "./context/AuthContext";
 import { LibraryProvider } from "./context/LibraryContext";
 import reportWebVitals from './reportWebVitals';
 
@@ -9,9 +10,11 @@ import reportWebVitals from './reportWebVitals';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-  <LibraryProvider>
-    <App />
-  </LibraryProvider>
+    <AuthProvider>
+      <LibraryProvider>
+        <App />
+      </LibraryProvider>
+    </AuthProvider>
   </React.StrictMode>
 );
 
