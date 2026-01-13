@@ -10,7 +10,6 @@ import Hero from "./components/Hero";
 import BookSection from "./components/BookSection";
 import FeaturedComics from "./components/FeaturedComics";
 import Newsletter from "./components/Newsletter";
-import Explore from "./components/Explore";
 import AboutPage from "./pages/AboutPage";
 import Footer from "./components/Footer";
 import LibraryPage from "./pages/LibraryPage";
@@ -79,7 +78,7 @@ const HomePage = ({ addToLibrary, darkMode, toggleDarkMode }) => {
 
         <FeaturedComics />
         <Newsletter />
-        <Explore />
+       
       </main>
 
       <Footer />
