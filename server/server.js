@@ -44,6 +44,9 @@ app.disable("x-powered-by");
 app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 
+// Register routes 
+app.use("/api/chapters", chaptersRoute);
+
 // ===== CORS =====
 const allowedOrigins = [
   "http://localhost:5173",
