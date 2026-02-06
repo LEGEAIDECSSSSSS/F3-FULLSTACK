@@ -1,11 +1,11 @@
 import express from "express";
 import Chapter from "../models/Chapter.js";
-import authMiddleware from "../middleware/auth.js";
+import { protect } from "../middleware/auth.js";
 
 const router = express.Router();
 
 /* CREATOR STATS */
-router.get("/stats", authMiddleware, async (req, res) => {
+router.get("/stats", protect, async (req, res) => {
   const creatorId = req.user.id;
 
   const books = await Chapter.countDocuments({ creator: creatorId });
@@ -18,7 +18,7 @@ router.get("/stats", authMiddleware, async (req, res) => {
 });
 
 /* RECENT BOOKS */
-router.get("/recent-books", authMiddleware, async (req, res) => {
+router.get("/recent-books", protect, async (req, res) => {
   const creatorId = req.user.id;
 
   const chapters = await Chapter.find({ creator: creatorId })
