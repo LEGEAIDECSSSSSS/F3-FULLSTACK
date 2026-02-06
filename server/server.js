@@ -13,6 +13,8 @@ import authRoutes from "./routes/authRoutes.js";
 import libraryRoutes from "./routes/LibraryRoutes.js";
 import bookRoutesFactory from "./routes/bookRoutes.js";
 import { protect } from "./middleware/authMiddleware.js";
+import chaptersRoute from "./routes/chapters.js";
+
 
 // ===== __dirname for ES modules =====
 const __filename = fileURLToPath(import.meta.url);
