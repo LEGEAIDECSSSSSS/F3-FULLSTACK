@@ -32,19 +32,19 @@ export default function CreateBook() {
     fileInputRef.current.click(); // Trigger hidden file input
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+ const handleSubmit = (e) => {
+  e.preventDefault();
 
-    const bookData = {
-      thumbnail,
-      title,
-      author,
-      synopsis,
-    };
-
-    console.log("Book Data:", bookData);
-    navigate("/create-chapter", { state: { bookData } });
+  const bookData = {
+    title,
+    author,
+    synopsis,
+    thumbnailPreview, // 👈 pass the preview URL
   };
+
+  navigate("/create-chapter", { state: { bookData } });
+};
+
 
   return (
     <div className="flex flex-col items-center min-h-screen bg-gray-100 dark:bg-black px-4 py-10">

@@ -129,13 +129,14 @@ export default function CreateChapter() {
         {bookData && (
           <div className="mt-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-4">
-              {bookData.thumbnail && (
-                <img
-                  src={URL.createObjectURL(bookData.thumbnail)}
-                  alt="Book Cover"
-                  className="w-16 h-24 rounded-lg object-cover border border-gray-300 dark:border-gray-600"
-                />
-              )}
+            {bookData.thumbnailPreview && (
+  <img
+    src={bookData.thumbnailPreview}
+    alt="Book Cover"
+    className="w-16 h-24 rounded-lg object-cover border border-gray-300 dark:border-gray-600"
+  />
+)}
+
               <div>
                 <p className="font-semibold text-gray-800 dark:text-white">
                   {bookData.title}
