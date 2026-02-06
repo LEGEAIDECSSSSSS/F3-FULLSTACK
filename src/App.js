@@ -19,6 +19,7 @@ import {useLibrary } from "./context/LibraryContext";
 import axios from "axios";
 import CreatorDashboard from "./pages/CreatorDashboard";
 import CreateChapter from "./pages/CreateChapter";
+import CreateBook from "./pages/CreateBook";
 
 const API_BASE =
   process.env.REACT_APP_API_URL?.trim() ||
@@ -150,7 +151,8 @@ function AppContent({ darkMode, toggleDarkMode }) {
   <Route path="/about" element={<AboutPage />} />
   <Route path="/login" element={<LoginPage />} />
   <Route path="/signup" element={<SignupPage />} />
-  <Route path="/create-chapter" element={<CreateChapter />} />
+    <Route path="/create-book" element={<CreateBook />} />
+      <Route path="/create-chapter" element={<CreateChapter />} />
 </Routes>
 
     </div>

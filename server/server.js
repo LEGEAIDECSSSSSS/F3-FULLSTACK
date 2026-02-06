@@ -14,6 +14,7 @@ import libraryRoutes from "./routes/LibraryRoutes.js";
 import bookRoutesFactory from "./routes/bookRoutes.js";
 import { protect } from "./middleware/authMiddleware.js";
 import chaptersRoute from "./routes/chapters.js";
+import creatorRoutes from "./routes/creator.js";
 
 
 // ===== __dirname for ES modules =====
@@ -48,6 +49,8 @@ app.use(cookieParser());
 
 // Register routes 
 app.use("/api/chapters", chaptersRoute);
+
+app.use("/api/creator", creatorRoutes);
 
 // ===== CORS =====
 const allowedOrigins = [

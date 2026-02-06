@@ -2,13 +2,13 @@ import mongoose from "mongoose";
 
 const ChapterSchema = new mongoose.Schema(
   {
-    title: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    content: {
-      type: String, // HTML from TipTap
+    title: String,
+    content: String,
+
+    // 👇 VERY IMPORTANT
+    creator: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
   },

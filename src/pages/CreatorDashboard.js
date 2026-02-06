@@ -27,15 +27,17 @@ export default function CreatorDashboard() {
 
     const fetchData = async () => {
       try {
-        const statsRes = await axios.get("/api/creator/stats");
+        // Full backend URL
+        const statsRes = await axios.get("http://localhost:5000/api/creator/stats");
         setStats(statsRes.data);
 
-        const booksRes = await axios.get("/api/creator/recent-books");
+        const booksRes = await axios.get("http://localhost:5000/api/creator/recent-books");
         setRecentBooks(booksRes.data);
-      } catch {
-        console.log("Using placeholder data");
+      } catch (err) {
+        console.log("Using placeholder data", err);
       }
     };
+
     fetchData();
   }, []);
 
@@ -69,35 +71,31 @@ export default function CreatorDashboard() {
             Welcome back, <span className="font-semibold text-gray-800 dark:text-white">{user?.username}</span>
           </p>
 
-          <style jsx>{`
-            .pulsate {
-              animation: pulsate 2.5s ease-in-out infinite;
-            }
-            @keyframes pulsate {
-              0%, 100% { opacity: 1; }
-              50% { opacity: 0.7; }
-            }
-          `}</style>
+          <style>
+            {`
+              .pulsate {
+                animation: pulsate 2.5s ease-in-out infinite;
+              }
+              @keyframes pulsate {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.7; }
+              }
+            `}
+          </style>
         </div>
 
         {/* CANVAS TILE */}
-        <div 
-          onClick={() => navigate("/create-chapter")}
-     className="cursor-pointer w-full mb-10 px-6 sm:px-10 md:px-14  bg-transparent border-2 border-black dark:border-gray-600  text-gray-800 dark:text-white  shadow-xl flex flex-col items-center justify-center text-center  hover:bg-gray-50 dark:hover:bg-gray-800 transition py-10 sm:py-14 "
-     style={{ borderRadius: 0, minHeight: "45vh" }}
->
-  <PlusCircle size={60} className="mb-6" />
-
-  {/* Responsive title */}
-  <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">
-    CANVAS
-  </h2>
-
-  {/* Responsive paragraph */}
-  <p className="text-sm sm:text-base md:text-lg text-gray-600 dark:text-gray-300 max-w-2xl px-2">
-    Start writing inside our clean, canvas-style editor. Build your book chapter
-    by chapter with powerful formatting tools.
-  </p>
+        <div
+          onClick={() => navigate("/create-book")}
+          className="cursor-pointer w-full mb-10 px-6 sm:px-10 md:px-14 bg-transparent border-2 border-black dark:border-gray-600 text-gray-800 dark:text-white shadow-xl flex flex-col items-center justify-center text-center hover:bg-gray-50 dark:hover:bg-gray-800 transition py-10 sm:py-14"
+          style={{ borderRadius: 0, minHeight: "45vh" }}
+        >
+          <PlusCircle size={60} className="mb-6" />
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">CANVAS</h2>
+          <p className="text-sm sm:text-base md:text-lg text-gray-600 dark:text-gray-300 max-w-2xl px-2">
+            Start writing inside our clean, canvas-style editor. Build your book chapter
+            by chapter with powerful formatting tools.
+          </p>
         </div>
 
         {/* STATS */}
@@ -113,33 +111,30 @@ export default function CreatorDashboard() {
           ))}
         </div>
 
-       {/* QUICK ACTION TILES */}
-<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4 sm:gap-6 mb-12">
-  {tiles.map((tile, idx) => {
-    const isLast = idx === tiles.length - 1;
-    return (
-      <div
-        key={idx}
-        onClick={tile.onClick}
-        className={`
-          cursor-pointer h-36 sm:h-40 rounded-2xl shadow-lg flex flex-col items-center justify-center gap-3
-          bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition
-          ${isLast ? "col-span-full sm:col-span-1 mx-auto w-2/3 sm:w-full lg:col-start-2" : "w-full"}
-        `}
-      >
-        <div className="flex items-center justify-center h-10 w-10 text-gray-800 dark:text-white">
-          {tile.icon}
+        {/* QUICK ACTION TILES */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4 sm:gap-6 mb-12">
+          {tiles.map((tile, idx) => {
+            const isLast = idx === tiles.length - 1;
+            return (
+              <div
+                key={idx}
+                onClick={tile.onClick}
+                className={`
+                  cursor-pointer h-36 sm:h-40 rounded-2xl shadow-lg flex flex-col items-center justify-center gap-3
+                  bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition
+                  ${isLast ? "col-span-full sm:col-span-1 mx-auto w-2/3 sm:w-full lg:col-start-2" : "w-full"}
+                `}
+              >
+                <div className="flex items-center justify-center h-10 w-10 text-gray-800 dark:text-white">
+                  {tile.icon}
+                </div>
+                <span className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 dark:text-white">
+                  {tile.label}
+                </span>
+              </div>
+            );
+          })}
         </div>
-
-        {/* FIXED RESPONSIVE LABEL */}
-        <span className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 dark:text-white">
-          {tile.label}
-        </span>
-      </div>
-    );
-  })}
-</div>
-
 
         <Footer />
       </main>
